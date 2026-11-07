@@ -141,6 +141,8 @@ class HybridRow(dict):
 
 
 def _hybrid_row_factory(cursor):
+    if cursor.description is None:
+        return tuple
     names = [column.name for column in cursor.description]
     return lambda values: HybridRow(names, values)
 
