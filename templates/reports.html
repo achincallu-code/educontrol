@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Reportes · EduControl{% endblock %}
+{% block content %}
+{% set summary = namespace(students=0, assignments=0, pending=0, reviewed=0) %}
+{% for group in groups %}
+  {% set summary.students = summary.students + group.students %}
+  {% set summary.assignments = summary.assignments + group.assignments %}
+  {% set summary.pending = summary.pending + (group.pending or 0) %}
+  {% set summary.reviewed = summary.reviewed + (group.reviewed or 0) %}
+{% endfor %}
+<div class="heading reports-heading no-print">
+  <div>
+    <small class="kicker">ANÁLISIS ACADÉMICO</small>
+    <h1>Reportes de desempeño</h1>
+    <p>Indicadores basados en la información registrada para alumnos activos aprobados.</p>
+  </div>
+  <div class="actions">
+    <a class="secondary" href="{{ url_for('export_report', group=selected_group, q=q) }}">↓ Exportar CSV para Excel</a>
+    <button class="primary" type="button" onclick="window.print()">Imprimir / Guardar PDF</button>
+  </div>
+</div>
+
+<section class="panel reports-filters no-print">
+  <form class="reports-filter-form" method="get" action="{{ url_for('reports') }}">
+    <label for="report-group">Grupo
+      <select id="report-group" name="group">
+        <option value="">Todos los grupos</option>
+        {% for group in available_groups %}
+          <option value="{{ group.group_name }}" {% if selected_group == group.group_name %}selected{% endif %}>{{ group.group_name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label for="report-search">Alumno o número de lista
+      <input id="report-search" name="q" value="{{ q }}" placeholder="Buscar alumno o lista">
+    </label>
+    <button class="primary" type="submit">Consultar</button>
+    <a class="secondary" href="{{ url_for('reports') }}">Limpiar</a>
+  </form>
+</section>
+
+<header class="report-print-header">
+  <div class="report-institution-mark" aria-hidden="true">CE</div>
+  <div>
+    <small class="kicker">CECyTEM · EDUCONTROL</small>
+    <h2>Reporte de desempeño académico{% if selected_group %} · Grupo {{ selected_group }}{% endif %}</h2>
+    <p>Alumnos activos aprobados · Generado el {{ generated_on }}{% if q %} · Filtro: {{ q }}{% endif %}</p>
+  </div>
+</header>
+
+<section class="report-stat-grid" aria-label="Resumen del reporte">
+  <article class="report-stat-card">
+    <span class="report-stat-icon report-stat-students" aria-hidden="true"><svg class="ui-icon"><use href="#icon-users"></use></svg></span>
+    <div><small>Alumnos incluidos</small><b>{{ summary.students }}</b><span>Con los filtros seleccionados</span></div>
+  </article>
+  <article class="report-stat-card">
+    <span class="report-stat-icon report-stat-groups" aria-hidden="true"><svg class="ui-icon"><use href="#icon-home"></use></svg></span>
+    <div><small>Grupos incluidos</small><b>{{ groups|length }}</b><span>Comparación por grupo</span></div>
+  </article>
+  <article class="report-stat-card">
+    <span class="report-stat-icon report-stat-assignments" aria-hidden="true"><svg class="ui-icon"><use href="#icon-book"></use></svg></span>
+    <div><small>Actividades registradas</small><b>{{ summary.assignments }}</b><span>Registros de actividad</span></div>
+  </article>
+  <article class="report-stat-card">
+    <span class="report-stat-icon report-stat-pending" aria-hidden="true"><svg class="ui-icon"><use href="#icon-clock"></use></svg></span>
+    <div><small>Pendientes / entregadas</small><b>{{ summary.pending }}</b><span>Por revisar o calificar</span></div>
+  </article>
+  <article class="report-stat-card">
+    <span class="report-stat-icon report-stat-reviewed" aria-hidden="true"><svg class="ui-icon"><use href="#icon-check"></use></svg></span>
+    <div><small>Revisadas</small><b>{{ summary.reviewed }}</b><span>Registros con revisión</span></div>
+  </article>
+</section>
+
+<section class="panel report-chart-panel">
+  <div class="report-section-heading">
+    <div><small class="kicker">COMPARATIVA</small><h2>Promedio por grupo</h2></div>
+    <span class="report-chart-scale">Escala de 0 a 10</span>
+  </div>
+  {% if groups %}
+    <div class="report-group-chart">
+      {% for group in groups %}
+        <div class="report-group-chart-row">
+          <b class="report-group-label">Grupo {{ group.group_name }}</b>
+          <div class="report-chart-track" role="img" aria-label="{% if group.average is not none %}Promedio {{ group.average }} de 10{% else %}Sin calificaciones registradas{% endif %}">
+            {% if group.average is not none %}
+              <span class="report-chart-bar" style="--report-bar: {{ (group.average|float / 10 * 100)|round|int }}%"></span>
+            {% else %}
+              <span class="report-chart-empty"></span>
+            {% endif %}
+          </div>
+          <b class="report-chart-value">{{ group.average if group.average is not none else '—' }}<small>{% if group.average is not none %}/ 10{% else %}Sin datos{% endif %}</small></b>
+        </div>
+      {% endfor %}
+    </div>
+    <p class="report-chart-note">El promedio considera únicamente calificaciones registradas. Un guion indica que el grupo aún no cuenta con calificaciones.</p>
+  {% else %}
+    <p class="empty">No hay grupos que coincidan con los filtros seleccionados.</p>
+  {% endif %}
+</section>
+
+<section class="panel report-table-panel">
+  <div class="report-section-heading">
+    <div><small class="kicker">RESUMEN COLECTIVO</small><h2>Estadísticas por grupo</h2></div>
+    <span class="report-result-count">{{ groups|length }} grupos</span>
+  </div>
+  <div class="tablebox">
+    <table class="report-table">
+      <thead><tr><th>Grupo</th><th>Alumnos</th><th>Actividades registradas</th><th>Pendientes</th><th>Revisadas</th><th>Promedio</th></tr></thead>
+      <tbody>{% for group in groups %}
+        <tr><td><span class="report-group-chip">{{ group.group_name }}</span></td><td>{{ group.students }}</td><td>{{ group.assignments }}</td><td><span class="report-count report-count-pending">{{ group.pending or 0 }}</span></td><td><span class="report-count report-count-reviewed">{{ group.reviewed or 0 }}</span></td><td><b class="report-grade">{% if group.average is not none %}{{ group.average }} <small>/ 10</small>{% else %}—{% endif %}</b></td></tr>
+      {% else %}<tr><td colspan="6" class="empty">No hay estadísticas para mostrar.</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel report-table-panel report-student-panel">
+  <div class="report-section-heading">
+    <div><small class="kicker">SEGUIMIENTO INDIVIDUAL</small><h2>Desempeño por alumno</h2></div>
+    <span class="report-result-count">{{ students|length }} alumnos</span>
+  </div>
+  <div class="tablebox">
+    <table class="report-table report-student-table">
+      <thead><tr><th>Grupo</th><th>Lista</th><th>Alumno</th><th>Semestre</th><th>Actividades</th><th>Pendientes</th><th>Revisadas</th><th>Promedio</th><th>Expediente</th></tr></thead>
+      <tbody>{% for student in students %}
+        <tr><td><span class="report-group-chip">{{ student.group_name }}</span></td><td>{{ student.list_number }}</td><td><b>{{ student.full_name }}</b></td><td>{{ student.semester or '—' }}</td><td>{{ student.assignments }}</td><td><span class="report-count report-count-pending">{{ student.pending or 0 }}</span></td><td><span class="report-count report-count-reviewed">{{ student.reviewed or 0 }}</span></td><td><b class="report-grade">{% if student.average is not none %}{{ student.average }} <small>/ 10</small>{% else %}—{% endif %}</b></td><td><a class="report-record-link" href="{{ url_for('record', student_id=student.id) }}">Abrir expediente <span aria-hidden="true">→</span></a></td></tr>
+      {% else %}<tr><td colspan="9" class="empty">No se encontraron alumnos con esos filtros.</td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

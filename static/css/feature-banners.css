@@ -1,0 +1,278 @@
+.student-hero,
+.teacher-dashboard .hero,
+.cecyto-assistant,
+.achievements-hero {
+  isolation: isolate;
+  background-color: #f2f8ee;
+}
+
+.student-hero::before,
+.teacher-dashboard .hero::before,
+.cecyto-assistant::before,
+.achievements-hero::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(247, 250, 243, .97), rgba(247, 250, 243, .86) 43%, rgba(247, 250, 243, .25) 100%);
+  content: "";
+  pointer-events: none;
+}
+
+.student-hero-copy {
+  max-width: min(100%, 610px);
+  margin-left: 0;
+}
+
+.student-hero h2,
+.teacher-dashboard .hero h2,
+.assistant-copy h2 {
+  color: #194b34;
+}
+
+.student-hero p,
+.teacher-dashboard .hero p,
+.assistant-copy p {
+  color: #526e5d;
+}
+
+.teacher-dashboard .hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 225px;
+  overflow: hidden;
+  --ink: #194b34;
+  --muted: #355644;
+  border-color: #dce9d0;
+  background: #f2f8ee;
+}
+
+.teacher-dashboard .hero::before {
+  background: linear-gradient(90deg, rgba(247, 250, 243, .1), rgba(247, 250, 243, .28) 40%, rgba(247, 250, 243, .28) 72%, rgba(247, 250, 243, .1));
+}
+
+.teacher-dashboard .hero > div {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  max-width: 720px;
+}
+
+.student-hero-mascot {
+  display: block;
+  width: clamp(105px, 16vw, 170px);
+  height: 145px;
+  flex: 0 0 clamp(105px, 16vw, 170px);
+  border-radius: 18px;
+  object-fit: cover;
+  filter: drop-shadow(0 8px 12px rgba(24, 67, 39, .14));
+}
+
+.student-hero-mascot {
+  object-position: right center;
+}
+
+.teacher-dashboard .hero h2,
+.cecyto-assistant[data-assistant-endpoint="dashboard"] .assistant-copy h2 {
+  color: #194b34;
+}
+
+.teacher-dashboard .hero p,
+.cecyto-assistant[data-assistant-endpoint="dashboard"] .assistant-copy p {
+  color: #355644;
+  font-weight: 600;
+}
+
+.cecyto-assistant {
+  display: block;
+  min-height: 158px;
+  padding: 18px 24px;
+}
+
+.cecyto-assistant::before {
+  background: linear-gradient(90deg, rgba(247, 250, 243, .58), rgba(247, 250, 243, .93) 32%, rgba(247, 250, 243, .93) 68%, rgba(247, 250, 243, .4));
+}
+
+.cecyto-assistant[data-assistant-endpoint="dashboard"] {
+  --ink: #194b34;
+  --muted: #355644;
+  min-height: 225px;
+  border-color: #dce9d0;
+  background: #f2f8ee;
+}
+
+.cecyto-assistant[data-assistant-endpoint="dashboard"]::before {
+  background: linear-gradient(90deg, rgba(247, 250, 243, .12), rgba(247, 250, 243, .24) 34%, rgba(247, 250, 243, .24) 68%, rgba(247, 250, 243, .12));
+}
+
+.cecyto-assistant[data-assistant-endpoint="dashboard"] .assistant-kicker,
+.cecyto-assistant[data-assistant-endpoint="dashboard"] .assistant-cheer {
+  color: #356c4a;
+}
+
+.cecyto-assistant[data-assistant-endpoint="dashboard"] .assistant-copy {
+  width: min(100%, 650px);
+  margin-left: 0;
+}
+
+.cecyto-assistant[data-assistant-endpoint="dashboard"] .assistant-copy p {
+  font-weight: 600;
+}
+
+html[data-appearance="dark"] .teacher-dashboard .hero,
+html[data-appearance="dark"] .cecyto-assistant[data-assistant-endpoint="dashboard"] {
+  --ink: #e4eee7;
+  --muted: #a0afa5;
+  border-color: var(--line);
+  background: linear-gradient(112deg, var(--surface-raised), var(--surface));
+}
+
+html[data-appearance="dark"] :is(.student-hero, .teacher-dashboard .hero, .cecyto-assistant, .achievements-hero) {
+  --ink: #e4eee7;
+  --muted: #a0afa5;
+  border-color: var(--line);
+  background-color: var(--surface);
+}
+
+html[data-appearance="dark"] :is(.student-hero, .teacher-dashboard .hero, .cecyto-assistant, .achievements-hero)::before {
+  background: linear-gradient(90deg, rgba(28, 40, 33, .92), rgba(28, 40, 33, .76) 58%, rgba(28, 40, 33, .58));
+}
+
+html[data-appearance="dark"] :is(.student-hero h2, .teacher-dashboard .hero h2, .assistant-copy h2) {
+  color: var(--ink);
+}
+
+html[data-appearance="dark"] :is(.student-hero p, .teacher-dashboard .hero p, .assistant-copy p) {
+  color: var(--muted);
+}
+
+html[data-appearance="dark"] .cecyto-assistant .assistant-kicker,
+html[data-appearance="dark"] .cecyto-assistant .assistant-cheer {
+  color: #a7c7b1;
+}
+
+html[data-appearance="dark"] .cecyto-assistant[data-assistant-endpoint="dashboard"] .assistant-kicker {
+  color: #a7c7b1;
+}
+
+html[data-appearance="dark"] .achievements-hero-copy {
+  color: var(--ink);
+}
+
+.assistant-copy {
+  width: min(100%, 650px);
+  max-width: none;
+  margin-left: 0;
+}
+
+.assistant-cheer {
+  display: inline-block;
+  margin-top: 7px;
+  color: #527b53;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.achievements-hero {
+  background-color: #f6f7ed;
+}
+
+.achievements-hero::before {
+  background: linear-gradient(90deg, rgba(248, 249, 241, .97), rgba(248, 249, 241, .9) 48%, rgba(248, 249, 241, .22));
+}
+
+.achievements-hero-copy {
+  max-width: min(100%, 720px);
+  margin-left: 0;
+}
+
+.achievements-hero-art {
+  z-index: 1;
+}
+
+@media (max-width: 760px) {
+  .student-hero {
+    min-height: 185px;
+  }
+
+  .teacher-dashboard .hero {
+    min-height: 185px;
+  }
+
+  .student-hero-mascot {
+    width: clamp(82px, 25vw, 125px);
+    height: 120px;
+    flex-basis: clamp(82px, 25vw, 125px);
+  }
+
+  .student-hero-copy {
+    max-width: 100%;
+    margin-left: 0;
+  }
+
+  .assistant-copy {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .achievements-hero-copy {
+    max-width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .student-hero-copy {
+    max-width: 100%;
+  }
+
+  .cecyto-assistant {
+    min-height: 175px;
+    padding: 16px;
+  }
+
+  .cecyto-assistant::before {
+    background: linear-gradient(90deg, rgba(247, 250, 243, .72), rgba(247, 250, 243, .6) 70%, rgba(247, 250, 243, .3));
+  }
+
+  .assistant-copy {
+    width: 100%;
+    margin: 0;
+  }
+
+  .achievements-hero-copy {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-appearance="system"] :is(.student-hero, .teacher-dashboard .hero, .cecyto-assistant, .achievements-hero) {
+    --ink: #e4eee7;
+    --muted: #a0afa5;
+    border-color: var(--line);
+    background-color: var(--surface);
+  }
+
+  html[data-appearance="system"] :is(.student-hero, .teacher-dashboard .hero, .cecyto-assistant, .achievements-hero)::before {
+    background: linear-gradient(90deg, rgba(28, 40, 33, .92), rgba(28, 40, 33, .76) 58%, rgba(28, 40, 33, .58));
+  }
+
+  html[data-appearance="system"] :is(.student-hero h2, .teacher-dashboard .hero h2, .assistant-copy h2) {
+    color: var(--ink);
+  }
+
+  html[data-appearance="system"] :is(.student-hero p, .teacher-dashboard .hero p, .assistant-copy p) {
+    color: var(--muted);
+  }
+
+  html[data-appearance="system"] .cecyto-assistant .assistant-kicker,
+  html[data-appearance="system"] .cecyto-assistant .assistant-cheer {
+    color: #a7c7b1;
+  }
+
+  html[data-appearance="system"] .achievements-hero-copy {
+    color: var(--ink);
+  }
+}

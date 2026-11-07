@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Notificaciones · EduControl{% endblock %}
+{% block content %}
+<div class="heading">
+  <div><small class="kicker">AVISOS Y ACTIVIDAD</small><h1>Notificaciones</h1><p>{% if is_teacher %}Administra fechas importantes y consulta los avisos generados por el sistema.{% else %}Avisos de tu grupo y actualizaciones de tus actividades.{% endif %}</p></div>
+  <a class="secondary" href="{{ url_for('student_calendar') }}">▦ Ver calendario →</a>
+</div>
+{% if is_teacher %}
+<section class="panel notification-admin-panel">
+  <div class="calendar-manage-heading">
+    <div><small class="kicker">AVISO ESCOLAR</small><h3>Publicar fecha importante</h3><p>El aviso también se mostrará en el calendario escolar.</p></div>
+  </div>
+  <form method="post" class="calendar-event-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Título<input name="title" maxlength="160" required placeholder="Ej. Suspensión de clases"></label>
+    <label>Mensaje<input name="message" maxlength="1000" required placeholder="Detalles para los destinatarios"></label>
+    <label>Fecha<input type="date" name="event_date" required></label>
+    <label>Grupo<select name="group_name"><option value="">Todos los grupos</option>{% for group in groups %}<option value="{{ group.group_name }}">Grupo {{ group.group_name }}</option>{% endfor %}</select></label>
+    <button class="primary">Publicar aviso →</button>
+  </form>
+</section>
+{% endif %}
+<section class="panel notification-list-panel">
+  <div class="calendar-events-heading">
+    <div><small class="kicker">BANDEJA</small><h3>Todos los avisos</h3></div>
+    {% if notifications|selectattr('read_at', 'none')|list %}
+      <form method="post" action="{{ url_for('mark_all_notifications_read') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="secondary small">Marcar todas como leídas</button>
+      </form>
+    {% endif %}
+  </div>
+  <div class="notification-list">
+    {% for notification in notifications %}
+      <article class="notification-card{% if not notification.read_at %} is-unread{% endif %}">
+        <span class="notification-type-icon type-{{ notification.type }}" aria-hidden="true">
+          <svg class="ui-icon"><use href="{% if notification.type == 'activity' %}#icon-book{% elif notification.type == 'activity_update' %}#icon-refresh{% elif notification.type == 'grade' %}#icon-star{% elif notification.type == 'completion' %}#icon-check{% elif notification.type == 'recognition' %}#icon-trophy{% elif notification.type == 'important' %}#icon-calendar{% else %}#icon-bell{% endif %}"></use></svg>
+        </span>
+        <div class="notification-card-content">
+          <div class="notification-card-title"><b>{{ notification.title }}</b>{% if not notification.read_at %}<span class="unread-label">Nueva</span>{% endif %}</div>
+          <p>{{ notification.message }}</p>
+          <small>
+            {% if notification.event_date %}Fecha: {{ notification.event_date }} · {% endif %}
+            {% if notification.target_name %}Alumno: {{ notification.target_name }} · {% elif notification.target_group %}Grupo {{ notification.target_group }} · {% else %}Todos los grupos · {% endif %}
+            <time>{{ notification.created_at }}</time>
+          </small>
+        </div>
+        <div class="notification-card-actions">
+          {% if not notification.read_at %}
+            <form method="post" action="{{ url_for('mark_notification_read', notification_id=notification.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="secondary small">Marcar leída</button>
+            </form>
+          {% endif %}
+          {% if is_teacher and notification.managed %}
+            <form method="post" action="{{ url_for('delete_managed_notification', notification_id=notification.id) }}" onsubmit="return confirm('¿Eliminar esta fecha importante?')">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="danger small">Eliminar</button>
+            </form>
+          {% endif %}
+        </div>
+      </article>
+    {% else %}
+      <p class="empty">Todavía no hay notificaciones.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Mi perfil · EduControl{% endblock %}
+{% block content %}
+<header class="heading profile-page-heading">
+  <div>
+    <small class="kicker">CUENTA PERSONAL</small>
+    <h1>Mi perfil</h1>
+    <p>Tu información escolar y los datos de acceso a EduControl.</p>
+  </div>
+  <a class="secondary" href="{{ url_for('student_settings') }}">Personalizar mi cuenta →</a>
+</header>
+
+<section class="panel profile-card">
+  <div class="profile-card-cover" aria-hidden="true"></div>
+  <div class="profile-card-main">
+    <div class="profile-icon profile-avatar">
+      {% if user_preferences.profile_avatar %}
+        <img src="{{ url_for('static', filename='img/' ~ user_preferences.profile_avatar) }}" alt="Avatar de {{ user.full_name }}">
+      {% else %}
+        <span>{{ user.full_name[0]|upper }}</span>
+      {% endif %}
+    </div>
+    <div class="profile-card-identity">
+      <small class="kicker">CECYTEM · EDUCONTROL</small>
+      <h2>{{ user.full_name }}</h2>
+      <span class="pill">{{ 'Docente' if user.role == 'teacher' else 'Alumno' }}</span>
+    </div>
+    <a class="profile-edit-link" href="{{ url_for('student_settings') }}">Cambiar avatar</a>
+  </div>
+  <div class="profile-data">
+    <div><small>{{ 'Correo electrónico' if user.role == 'student' else 'Usuario' }}</small><b>{{ user.email or user.username }}</b></div>
+    {% if user.role == 'student' %}
+      <div><small>Grupo</small><b>{{ user.group_name }}</b></div>
+      <div><small>Semestre</small><b>{% if user.semester %}{{ user.semester }}°{% else %}—{% endif %}</b></div>
+      <div><small>Número de lista</small><b>{{ user.list_number }}</b></div>
+    {% endif %}
+    <div><small>Estado de cuenta</small><b><span class="profile-account-status{% if user.approved and user.active %} is-active{% endif %}">{{ 'Activa' if user.approved and user.active else 'Pendiente de aprobación' if not user.approved else 'Desactivada' }}</span></b></div>
+  </div>
+  <p class="profile-help">Para actualizar tus datos oficiales o escolares, solicita apoyo al docente administrador.</p>
+</section>
+{% endblock %}

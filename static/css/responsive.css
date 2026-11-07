@@ -1,0 +1,472 @@
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+.shell,
+.main,
+.content,
+.content > *,
+.content .panel,
+.tablebox {
+  min-width: 0;
+}
+
+.content > * {
+  max-width: 100%;
+}
+
+.content .achievements-hero .achievements-hero-copy {
+  flex: 1;
+  max-width: none;
+  margin-left: 0;
+}
+
+.tablebox {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tablebox table {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    z-index: 32;
+    width: min(310px, 86vw);
+    padding: 22px 17px 15px;
+    transform: translateX(-105%);
+    box-shadow: 15px 0 45px rgba(15, 44, 27, .16);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-scrim {
+    position: fixed;
+    z-index: 31;
+    inset: 0;
+    display: block;
+    border: 0;
+    background: rgba(20, 38, 27, .3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+  }
+
+  .sidebar.open ~ .sidebar-scrim,
+  .shell:has(.sidebar.open) .sidebar-scrim,
+  body.sidebar-open .sidebar-scrim {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  body.sidebar-open {
+    overflow: hidden;
+  }
+
+  .menu {
+    display: grid;
+    flex: 0 0 42px;
+    place-items: center;
+  }
+
+  .main,
+  .main.full {
+    width: 100%;
+    margin: 0;
+  }
+
+  .topbar-date {
+    display: none;
+  }
+
+  .content {
+    width: min(100%, 1120px);
+    margin-inline: auto;
+  }
+
+  .content .grid,
+  .student-dashboard-grid,
+  .student-dashboard-lower {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .student-hero-copy,
+  .achievements-hero-copy {
+    max-width: min(100%, 720px);
+    margin-left: 0;
+  }
+
+  .teacher-dashboard .hero > div {
+    max-width: 100%;
+    margin-left: 0;
+  }
+
+  .cecyto-assistant {
+    min-height: 120px;
+    margin-bottom: 16px;
+    padding: 14px;
+  }
+
+  .assistant-copy {
+    width: 100%;
+    margin: 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  .topbar {
+    min-height: 64px;
+    height: auto;
+    padding: 8px 14px;
+  }
+
+  .topbar-start,
+  .topbar-end {
+    gap: 8px;
+  }
+
+  .topbar-title small {
+    max-width: 43vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .content {
+    padding: 20px 14px 28px;
+  }
+
+  .teacher-dashboard .hero > div {
+    max-width: 100%;
+    margin-left: 0;
+  }
+
+  .cecyto-assistant[data-assistant-endpoint="dashboard"] .assistant-copy {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .content .panel {
+    padding: clamp(14px, 3.5vw, 20px);
+  }
+
+  .content :is(button, .primary, .secondary, .danger, .calendar-nav, .notification-bell, .menu) {
+    min-height: 44px;
+  }
+
+  .content :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .content input[type="checkbox"],
+  .content input[type="radio"] {
+    width: 20px;
+    height: 20px;
+  }
+
+  .content .heading,
+  .content .heading .actions {
+    flex-wrap: wrap;
+  }
+
+  .content .heading .actions {
+    justify-content: flex-start;
+  }
+
+  .content .actions > :is(a, button, form) {
+    max-width: 100%;
+  }
+
+  .content .tablebox {
+    border-radius: 12px;
+  }
+
+  .student-full-calendar .calendar-day {
+    min-height: 46px;
+  }
+
+  .calendar-event-form,
+  .notification-admin-panel .calendar-event-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .activity-form-grid,
+  .preference-controls,
+  .dashboard-preference-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+}
+
+@media (max-width: 520px) {
+  .topbar {
+    padding-inline: 10px;
+  }
+
+  .topbar-title b {
+    font-size: 11px;
+  }
+
+  .user-pill {
+    max-width: 37vw;
+  }
+
+  .content {
+    padding: 17px 11px 24px;
+  }
+
+  .teacher-dashboard .hero {
+    min-height: 145px;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    padding: 10px 12px;
+  }
+
+  .teacher-dashboard .hero::before,
+  .cecyto-assistant[data-assistant-endpoint="dashboard"]::before {
+    display: none;
+  }
+
+  .cecyto-assistant[data-assistant-endpoint="dashboard"] {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+  }
+
+  .teacher-dashboard .hero > div,
+  .cecyto-assistant[data-assistant-endpoint="dashboard"] .assistant-copy {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 14px 16px;
+    border-radius: 0 0 17px 17px;
+    background: #f7faf3;
+    backdrop-filter: none;
+  }
+
+  .teacher-dashboard .hero > div {
+    min-width: 0;
+    flex: 1 1 0;
+    width: auto;
+    padding: 10px 8px 10px 2px;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .content .heading {
+    align-items: flex-start;
+    gap: 9px;
+  }
+
+  .content .heading h1 {
+    font-size: clamp(21px, 6vw, 27px);
+    overflow-wrap: anywhere;
+  }
+
+  .content .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .content .grid,
+  .content .three,
+  .content .two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .content .search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .content .search > :is(input, select, button, a) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .student-full-calendar {
+    padding: 12px;
+  }
+
+  .assistant-copy h2 {
+    font-size: 18px;
+  }
+
+  .assistant-copy p {
+    font-size: 10px;
+  }
+
+  .student-full-calendar .school-calendar {
+    gap: 3px;
+  }
+
+  .student-full-calendar .calendar-weekday {
+    font-size: 7px;
+    letter-spacing: 0;
+  }
+
+  .student-full-calendar .calendar-day {
+    min-height: 44px;
+    padding-inline: 1px;
+    border-radius: 8px;
+    font-size: 10px;
+  }
+
+  .calendar-page-heading,
+  .calendar-events-heading,
+  .calendar-manage-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .calendar-controls,
+  .calendar-view-switch {
+    max-width: 100%;
+  }
+
+  .calendar-view-switch {
+    display: flex;
+    width: 100%;
+  }
+
+  .calendar-view-switch > button {
+    min-width: 0;
+    flex: 1 1 0;
+    padding-inline: 6px;
+  }
+
+  .content .record .tablebox {
+    overflow-x: auto;
+  }
+
+  .content .record table {
+    min-width: 510px;
+  }
+}
+
+@media (max-width: 360px) {
+  body {
+    min-width: 0;
+  }
+
+  .content {
+    padding-inline: 8px;
+  }
+
+  .topbar-title small {
+    max-width: 34vw;
+  }
+
+  .topbar-end {
+    gap: 5px;
+  }
+
+  .user-pill {
+    max-width: 31vw;
+    padding-inline: 5px;
+  }
+
+  .student-stats .student-stat-card {
+    min-width: 0;
+    padding: 11px;
+  }
+}
+
+@media (max-width: 760px) {
+  .content .achievements-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    min-height: 0;
+    align-items: start;
+    padding: 18px;
+  }
+
+  .content .achievements-hero::before,
+  .content .achievements-hero::after {
+    display: none;
+  }
+
+  .content .achievements-hero .achievements-hero-copy {
+    flex: 1;
+    grid-row: 1;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .content .achievements-hero .achievements-hero-copy > p {
+    max-width: none;
+  }
+
+  .content .achievements-hero .achievements-hero-stats {
+    max-width: none;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .content .achievements-hero .achievements-hero-stats > span {
+    min-width: 0;
+    flex: 1 1 70px;
+    text-align: center;
+  }
+
+  .content .achievements-hero .achievements-hero-art {
+    position: relative;
+    grid-row: 2;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    height: auto;
+    min-height: 72px;
+    aspect-ratio: 2265 / 510;
+    flex: none;
+    opacity: 1;
+  }
+
+  .content .achievements-hero .achievements-progress-orbit {
+    top: 50%;
+    right: 30%;
+    left: auto;
+    width: clamp(58px, 14vw, 98px);
+    height: clamp(58px, 14vw, 98px);
+    transform: translateY(-50%);
+  }
+
+  .content .achievements-hero .achievements-progress-orbit::before {
+    inset: 6px;
+  }
+
+  .content .achievements-hero .achievements-progress-orbit strong {
+    font-size: clamp(16px, 3.2vw, 22px);
+  }
+
+  .content .achievements-hero .achievements-progress-orbit strong small {
+    font-size: 9px;
+  }
+
+  .content .achievements-hero .achievements-progress-orbit span {
+    font-size: 7px;
+  }
+}
+
+@media (max-width: 420px) {
+  .content .achievements-hero {
+    padding: 15px;
+  }
+
+  .content .achievements-hero .achievements-hero-stats > span {
+    flex-basis: calc(50% - 8px);
+  }
+}

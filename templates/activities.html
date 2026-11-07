@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Actividades · EduControl{% endblock %}
+{% block content %}
+<header class="heading activities-heading">
+  <div>
+    <small class="kicker">TRABAJO ACADÉMICO</small>
+    <h1>{% if role == 'teacher' %}Actividades y prácticas{% else %}Mis actividades{% endif %}</h1>
+    <p>{% if role == 'teacher' %}Organiza asignaciones, grupos y fechas de entrega.{% else %}Consulta tus actividades, instrucciones y avances.{% endif %}</p>
+  </div>
+  <span class="activities-total"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg><b>{{ activities|length }}</b> actividad(es)</span>
+</header>
+
+{% if role == 'teacher' %}
+<section class="panel activity-create-panel">
+  <div class="activity-create-heading">
+    <span class="activity-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg></span>
+    <div><small class="kicker">NUEVA ASIGNACIÓN</small><h2>Publicar actividad</h2><p>Se asignará a los alumnos activos aprobados del grupo seleccionado.</p></div>
+  </div>
+  <form method="post" class="activity-form activity-form-modern">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="activity-form-grid">
+      <div class="activity-field">
+        <label for="activity-title">Nombre de la actividad <span aria-hidden="true">*</span></label>
+        <input id="activity-title" name="title" maxlength="160" required placeholder="Ej. Práctica de HTML">
+      </div>
+      <div class="activity-field">
+        <label for="activity-subject">Materia <span aria-hidden="true">*</span></label>
+        <input id="activity-subject" name="subject" maxlength="160" required placeholder="Ej. Programación">
+      </div>
+      <div class="activity-field">
+        <label for="activity-group">Grupo <span aria-hidden="true">*</span></label>
+        <input id="activity-group" name="group_name" list="available-groups" maxlength="20" required placeholder="Selecciona o escribe el grupo">
+      </div>
+      <div class="activity-field">
+        <label for="activity-partial">Parcial <span aria-hidden="true">*</span></label>
+        <select id="activity-partial" name="partial" required>
+          <option value="">Seleccionar parcial</option>
+          <option>Parcial 1</option><option>Parcial 2</option><option>Parcial 3</option>
+        </select>
+      </div>
+      <div class="activity-field activity-field-date">
+        <label for="activity-due-date">Fecha de entrega <span class="activity-optional">Opcional</span></label>
+        <input id="activity-due-date" type="date" name="due_date">
+      </div>
+      <div class="activity-field activity-field-description">
+        <label for="activity-description">Instrucciones <span class="activity-optional">Opcional</span></label>
+        <textarea id="activity-description" name="description" rows="3" maxlength="5000" placeholder="Describe los pasos, materiales o criterios de entrega para tus alumnos."></textarea>
+      </div>
+    </div>
+    <datalist id="available-groups">{% for group in groups %}<option value="{{ group.group_name }}">{% endfor %}</datalist>
+    <div class="activity-form-actions">
+      <small><span aria-hidden="true">*</span> Campos obligatorios</small>
+      <button class="primary" type="submit"><svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>Publicar actividad</button>
+    </div>
+  </form>
+</section>
+{% endif %}
+
+<section class="activity-list-section">
+  <header class="activity-list-heading">
+    <div><small class="kicker">{% if role == 'teacher' %}SEGUIMIENTO ACADÉMICO{% else %}TU TRABAJO ESCOLAR{% endif %}</small><h2>{% if role == 'teacher' %}Actividades publicadas{% else %}Actividades asignadas{% endif %}</h2></div>
+    <span>{{ activities|length }} resultado(s)</span>
+  </header>
+
+  <form method="get" action="{{ url_for('activities') }}" class="activity-filter-bar">
+    <label for="activity-status-filter"><span>Estado</span>
+      <select id="activity-status-filter" name="status">
+        <option value="">Todos los estados</option>
+        {% if role == 'student' %}
+          <option value="Pendiente" {% if selected_status == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+          <option value="Entregada" {% if selected_status == 'Entregada' %}selected{% endif %}>Entregada</option>
+          <option value="Revisada" {% if selected_status == 'Revisada' %}selected{% endif %}>Revisada</option>
+        {% else %}
+          <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Por entregar</option>
+          <option value="submitted" {% if selected_status == 'submitted' %}selected{% endif %}>Entregadas</option>
+          <option value="reviewed" {% if selected_status == 'reviewed' %}selected{% endif %}>Revisadas</option>
+          <option value="unassigned" {% if selected_status == 'unassigned' %}selected{% endif %}>Sin alumnos asignados</option>
+        {% endif %}
+      </select>
+    </label>
+    <label for="activity-deadline-filter"><span>Fecha de entrega</span>
+      <select id="activity-deadline-filter" name="deadline">
+        <option value="">Cualquier fecha</option>
+        <option value="upcoming" {% if selected_deadline == 'upcoming' %}selected{% endif %}>Vigentes</option>
+        <option value="overdue" {% if selected_deadline == 'overdue' %}selected{% endif %}>Vencidas</option>
+        <option value="undated" {% if selected_deadline == 'undated' %}selected{% endif %}>Sin fecha</option>
+      </select>
+    </label>
+    <button class="secondary" type="submit"><svg class="ui-icon" aria-hidden="true"><use href="#icon-search"></use></svg>Aplicar filtros</button>
+    {% if selected_status or selected_deadline %}<a class="activity-clear-filter" href="{{ url_for('activities') }}">Limpiar</a>{% endif %}
+  </form>
+
+  <div class="activity-card-grid">
+    {% for activity in activities %}
+      {% set activity_status = activity.status or 'Pendiente' %}
+      {% set is_overdue = activity.due_date and activity.due_date < today and ((role == 'teacher' and activity.pending_count > 0) or (role == 'student' and (activity.status or 'Pendiente') == 'Pendiente')) %}
+      {% if role == 'teacher' %}
+        {% set state_key = 'reviewed' if activity.reviewed_count and not activity.pending_count and not activity.submitted_count else 'submitted' if activity.submitted_count and not activity.pending_count else 'pending' if activity.pending_count else 'unassigned' %}
+      {% else %}
+        {% set state_key = 'reviewed' if activity_status == 'Revisada' else 'submitted' if activity_status == 'Entregada' else 'overdue' if is_overdue else 'pending' %}
+      {% endif %}
+      <article class="activity-card activity-state-{{ state_key }}">
+        <div class="activity-card-topline">
+          <span class="activity-card-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span>
+          <span class="activity-status-badge">
+            <i></i>
+            {% if role == 'teacher' %}
+              {{ {'pending': 'Por entregar', 'submitted': 'Entregada', 'reviewed': 'Revisada', 'unassigned': 'Sin alumnos'}[state_key] }}
+            {% else %}
+              {{ 'Vencida' if is_overdue else activity_status }}
+            {% endif %}
+          </span>
+        </div>
+        <div class="activity-card-content">
+          <span class="activity-card-subject">{{ activity.subject }} <i>·</i> {{ activity.partial }}</span>
+          <h3>{{ activity.title }}</h3>
+          <p class="activity-card-description">{{ activity.description or 'Consulta las indicaciones con tu docente y revisa los detalles de esta actividad.' }}</p>
+        </div>
+        <div class="activity-card-meta">
+          <span><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>Grupo {{ activity.group_name }}</span>
+          {% if activity.due_date %}
+            <span class="{% if is_overdue %}is-date-overdue{% endif %}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>Entrega {{ activity.due_date }}</span>
+          {% else %}
+            <span><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>Sin fecha de entrega</span>
+          {% endif %}
+          {% if activity.created_at %}<span><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>Publicada {{ activity.created_at|string|truncate(10, True, '') }}</span>{% endif %}
+        </div>
+        {% if role == 'teacher' %}
+          <div class="activity-assignment-summary">
+            {% if activity.assigned_count %}
+              <span><b>{{ activity.assigned_count }}</b> alumno(s)</span>
+              <span><b>{{ activity.pending_count }}</b> pendiente(s)</span>
+              <span><b>{{ activity.submitted_count }}</b> entregada(s)</span>
+              <span><b>{{ activity.reviewed_count }}</b> revisada(s)</span>
+            {% else %}
+              <span>Esta actividad no tiene registros de alumnos.</span>
+            {% endif %}
+          </div>
+        {% elif activity.grade is not none %}
+          <div class="activity-grade"><svg class="ui-icon" aria-hidden="true"><use href="#icon-star"></use></svg>Calificación <b>{{ activity.grade }}/10</b></div>
+        {% endif %}
+        <div class="activity-card-actions">
+          {% if role == 'teacher' %}
+            <a class="secondary small" href="{{ url_for('edit_activity', aid=activity.id) }}">Editar</a>
+            <form method="post" action="{{ url_for('delete_activity', aid=activity.id) }}" data-confirm-message="¿Eliminar actividad y sus registros?">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="danger small" type="submit">Eliminar</button>
+            </form>
+          {% else %}
+            <a class="secondary small" href="{{ url_for('grades') }}">Consultar avance <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
+          {% endif %}
+        </div>
+      </article>
+    {% else %}
+      <div class="activity-empty-state"><span class="activity-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span><h3>No hay actividades para mostrar</h3><p>{% if selected_status or selected_deadline %}Prueba cambiando los filtros.{% elif role == 'teacher' %}Publica una nueva actividad para empezar.{% else %}Cuando se asignen actividades a tu grupo, aparecerán aquí.{% endif %}</p></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

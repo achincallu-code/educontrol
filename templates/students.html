@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Alumnos · EduControl{% endblock %}
+{% block content %}
+<header class="heading staff-page-heading">
+  <div>
+    <small class="kicker">GESTIÓN ESCOLAR</small>
+    <h1>Directorio de alumnos</h1>
+    <p>Administra grupos, cuentas y expedientes desde un solo lugar.</p>
+  </div>
+  <div class="staff-heading-actions">
+    {% if directory_stats.pending %}
+      <a class="secondary staff-pending-link" href="{{ url_for('pending') }}">
+        <svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>
+        Solicitudes pendientes <b>{{ directory_stats.pending }}</b>
+      </a>
+    {% endif %}
+    <a class="primary" href="{{ url_for('export_students') }}">
+      <svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>
+      Exportar CSV
+    </a>
+  </div>
+</header>
+
+<section class="staff-overview" aria-label="Resumen del alumnado">
+  <article class="staff-overview-card">
+    <span class="staff-overview-icon overview-green"><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg></span>
+    <div><small>Alumnos registrados</small><b>{{ directory_stats.total }}</b><span>En todos los grupos</span></div>
+  </article>
+  <article class="staff-overview-card">
+    <span class="staff-overview-icon overview-blue"><svg class="ui-icon" aria-hidden="true"><use href="#icon-shield"></use></svg></span>
+    <div><small>Cuentas activas</small><b>{{ directory_stats.active }}</b><span>Con acceso al portal</span></div>
+  </article>
+  <article class="staff-overview-card">
+    <span class="staff-overview-icon overview-gold"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg></span>
+    <div><small>Cuentas desactivadas</small><b>{{ directory_stats.inactive }}</b><span>Se pueden reactivar</span></div>
+  </article>
+  <a class="staff-overview-card staff-overview-action" href="{{ url_for('pending') }}">
+    <span class="staff-overview-icon overview-violet"><svg class="ui-icon" aria-hidden="true"><use href="#icon-graduation"></use></svg></span>
+    <div><small>Solicitudes por revisar</small><b>{{ directory_stats.pending }}</b><span>Revisar registros <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></span></div>
+  </a>
+</section>
+
+<section class="staff-groups-section" aria-labelledby="student-groups-title">
+  <div class="staff-section-heading">
+    <div><small class="kicker">ORGANIZACIÓN ESCOLAR</small><h2 id="student-groups-title">Grupos</h2></div>
+    <span>{{ group_stats|length }} grupo(s)</span>
+  </div>
+  <div class="staff-group-grid">
+    <a class="staff-group-card{% if not selected_group %} is-selected{% endif %}" href="{{ url_for('students', q=q, semester=selected_semester, status=selected_status) }}" aria-pressed="{{ 'true' if not selected_group else 'false' }}">
+      <span class="staff-group-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg></span>
+      <span class="staff-group-name">Todos los grupos</span>
+      <span class="staff-group-count">{{ directory_stats.active }} <small>alumnos activos</small></span>
+      <svg class="ui-icon staff-group-arrow" aria-hidden="true"><use href="#icon-chevron"></use></svg>
+    </a>
+    {% for group in group_stats %}
+      <a class="staff-group-card{% if selected_group == group.group_name %} is-selected{% endif %}" href="{{ url_for('students', group=group.group_name, q=q, semester=selected_semester, status=selected_status) }}" aria-pressed="{{ 'true' if selected_group == group.group_name else 'false' }}">
+        <span class="staff-group-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-graduation"></use></svg></span>
+        <span class="staff-group-name">{{ group.group_name }}</span>
+        <span class="staff-group-count">{{ group.active_students }} <small>activos{% if group.inactive_students %} · {{ group.inactive_students }} inactivos{% endif %}</small></span>
+        <svg class="ui-icon staff-group-arrow" aria-hidden="true"><use href="#icon-chevron"></use></svg>
+      </a>
+    {% else %}
+      <p class="empty">Todavía no hay grupos con alumnos aprobados.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="panel staff-directory-panel" aria-labelledby="student-directory-title">
+  <div class="staff-section-heading staff-directory-heading">
+    <div><small class="kicker">DIRECTORIO</small><h2 id="student-directory-title">Alumnos</h2></div>
+    <span class="staff-result-count">{{ students|length }} resultado(s)</span>
+  </div>
+
+  <form class="staff-filter-form" method="get" action="{{ url_for('students') }}" data-student-directory-search>
+    <label class="staff-search-field" for="student-search">
+      <svg class="ui-icon" aria-hidden="true"><use href="#icon-search"></use></svg>
+      <input id="student-search" name="q" value="{{ q }}" type="search" placeholder="Buscar por nombre o número de lista" autocomplete="off">
+    </label>
+    <label class="staff-filter-select" for="student-group">
+      <span>Grupo</span>
+      <select id="student-group" name="group">
+        <option value="">Todos</option>
+        {% for group in groups %}<option value="{{ group.group_name }}" {% if selected_group == group.group_name %}selected{% endif %}>{{ group.group_name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label class="staff-filter-select" for="student-semester">
+      <span>Semestre</span>
+      <select id="student-semester" name="semester">
+        <option value="">Todos</option>
+        {% for option in semester_options %}<option value="{{ option.semester }}" {% if selected_semester == option.semester|string %}selected{% endif %}>{{ option.semester }}° semestre</option>{% endfor %}
+      </select>
+    </label>
+    <label class="staff-filter-select" for="student-status">
+      <span>Estado</span>
+      <select id="student-status" name="status">
+        <option value="">Todas las cuentas</option>
+        <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Activas</option>
+        <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Desactivadas</option>
+      </select>
+    </label>
+    <button class="primary staff-filter-submit" type="submit">Buscar</button>
+    {% if q or selected_group or selected_semester or selected_status %}
+      <a class="secondary staff-filter-clear" href="{{ url_for('students') }}">Limpiar</a>
+    {% endif %}
+  </form>
+
+  <form class="staff-quick-lookup" method="get" action="{{ url_for('students') }}" data-quick-student-search>
+    <span class="staff-quick-lookup-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-search"></use></svg></span>
+    <div class="staff-quick-lookup-copy"><b>Búsqueda exacta por lista</b><small>Elige grupo y número para abrir un expediente rápidamente.</small></div>
+    <label class="sr-only" for="quick-group">Grupo</label>
+    <select id="quick-group" name="quick_group" required data-quick-group>
+      <option value="">Grupo</option>
+      {% for group in groups %}<option value="{{ group.group_name }}" {% if quick_group == group.group_name %}selected{% endif %}>{{ group.group_name }}</option>{% endfor %}
+    </select>
+    <label class="sr-only" for="quick-list-number">Número de lista</label>
+    <input id="quick-list-number" name="quick_list_number" type="number" min="1" max="9999" value="{{ quick_list_number }}" required placeholder="Núm. de lista" data-quick-list-number>
+    <button class="secondary" type="submit">Buscar</button>
+  </form>
+  {% if quick_student %}
+    <div class="quick-result" role="status">
+      <span class="staff-student-avatar">{{ quick_student.full_name[0]|upper }}</span>
+      <div><small>ALUMNO ENCONTRADO</small><b>{{ quick_student.full_name }}</b><span>Grupo {{ quick_student.group_name }} · Lista {{ quick_student.list_number }} · Semestre {{ quick_student.semester or '—' }}°</span></div>
+      <a class="primary" href="{{ url_for('record', student_id=quick_student.id) }}">Abrir expediente <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
+    </div>
+  {% elif quick_message %}
+    <p class="flash error" role="status">{{ quick_message }}</p>
+  {% endif %}
+
+  <div class="staff-student-list">
+    {% for student in students %}
+      <article class="staff-student-card">
+        <span class="staff-student-avatar">{{ student.full_name[0]|upper }}</span>
+        <div class="staff-student-identity">
+          <b>{{ student.full_name }}</b>
+          <small>{{ student.email or student.username }}</small>
+        </div>
+        <div class="staff-student-detail"><small>Grupo</small><b>{{ student.group_name }}</b></div>
+        <div class="staff-student-detail"><small>Semestre</small><b>{{ student.semester or '—' }}{% if student.semester %}°{% endif %}</b></div>
+        <div class="staff-student-detail"><small>Núm. de lista</small><b>{{ student.list_number or '—' }}</b></div>
+        <span class="staff-account-status {{ 'is-active' if student.active else 'is-inactive' }}"><i></i>{{ 'Activa' if student.active else 'Desactivada' }}</span>
+        <div class="staff-student-actions">
+          <a class="secondary small" href="{{ url_for('record', student_id=student.id) }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clipboard"></use></svg>Expediente</a>
+          <a class="secondary small" href="{{ url_for('edit_student', uid=student.id) }}">Editar</a>
+          <form method="post" action="{{ url_for('toggle_student_active', uid=student.id) }}" data-confirm-message="{{ '¿Desactivar' if student.active else '¿Reactivar' }} la cuenta de {{ student.full_name }}?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="{{ 'danger' if student.active else 'primary' }} small" type="submit">{{ 'Desactivar' if student.active else 'Reactivar' }}</button>
+          </form>
+        </div>
+      </article>
+    {% else %}
+      <p class="empty staff-empty-results">No se encontraron alumnos con esos filtros.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

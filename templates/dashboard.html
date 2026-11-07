@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% block title %}Inicio · EduControl{% endblock %}
+{% block content %}
+{% if role == 'teacher' %}
+<div class="teacher-dashboard">
+<div class="heading">
+  <div>
+    <small class="kicker">TU ESPACIO ACADÉMICO</small>
+    <h1>¡Hola, {{ session.get('full_name') }}! 👋</h1>
+    <p>Qué gusto verte. Hoy es un buen día para avanzar.</p>
+  </div>
+  <span class="pill">🐾 CECyTEM · {{ 'Docente' if role == 'teacher' else 'Alumno' }}</span>
+</div>
+
+<div class="hero">
+  <div>
+    <small>MENSAJE DE CECYTO</small>
+    <h2>¡Tú puedes lograrlo!</h2>
+    <p>Cecyto te acompaña en este parcial. Cada actividad cuenta para alcanzar tus metas. 💚</p>
+  </div>
+</div>
+  {% set group_max = (group_stats|map(attribute='students')|max) if group_stats else 1 %}
+  {% set grade_max = (grade_distribution|map(attribute='total')|max) if grade_distribution else 1 %}
+  {% if 'teacher_stats' in dashboard_widgets %}
+  <div class="stats teacher-stats">
+    <article><i><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg></i><small>Alumnos activos</small><b>{{ stats.total }}</b></article>
+    <article class="teacher-stat-pending"><i><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg></i><small>Solicitudes pendientes</small><b>{{ stats.pending }}</b>{% if stats.pending %}<a href="{{ url_for('pending') }}">Revisar solicitudes <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>{% endif %}</article>
+    <article><i><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></i><small>Actividades registradas</small><b>{{ stats.activities }}</b></article>
+    <article><i><svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg></i><small>Actividades revisadas</small><b>{{ stats.assignment_reviewed }}</b></article>
+    <article><i><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg></i><small>Actividades pendientes</small><b>{{ stats.assignment_pending }}</b></article>
+    <article><i><svg class="ui-icon" aria-hidden="true"><use href="#icon-star"></use></svg></i><small>Promedio general</small><b>{{ stats.average }}</b></article>
+  </div>
+  {% endif %}
+  {% if 'teacher_quick' in dashboard_widgets or 'teacher_recent' in dashboard_widgets %}
+  <div class="grid{% if ('teacher_quick' in dashboard_widgets) != ('teacher_recent' in dashboard_widgets) %} dashboard-single-grid{% endif %}">
+    {% if 'teacher_quick' in dashboard_widgets %}
+    <section class="panel">
+      <h3>Accesos rápidos</h3>
+      <div class="quick">
+        <a href="{{ url_for('students') }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg><b>Directorio de alumnos</b><small>Buscar por nombre o lista</small></a>
+        <a href="{{ url_for('pending') }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg><b>Aprobar registros</b><small>Revisar solicitudes</small></a>
+        <a href="{{ url_for('activities') }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg><b>Crear actividad</b><small>Publicar tarea o práctica</small></a>
+        <a href="{{ url_for('grades') }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-star"></use></svg><b>Calificaciones</b><small>Evaluar alumnos</small></a>
+        <a href="{{ url_for('reports') }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg><b>Reportes</b><small>Desempeño por alumno y grupo</small></a>
+      </div>
+    </section>
+    {% endif %}
+    {% if 'teacher_recent' in dashboard_widgets %}
+    <section class="panel">
+      <h3>Actividad reciente</h3>
+      {% for a in recent %}
+        <div class="row"><b>{{ a.title }}</b><small>{{ a.group_name }} · {{ a.subject }}</small></div>
+      {% else %}
+        <p class="empty">Aún no hay actividades.</p>
+      {% endfor %}
+    </section>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% if 'teacher_groups' in dashboard_widgets or 'teacher_grades' in dashboard_widgets %}
+  <div class="grid teacher-charts{% if ('teacher_groups' in dashboard_widgets) != ('teacher_grades' in dashboard_widgets) %} dashboard-single-grid{% endif %}">
+    {% if 'teacher_groups' in dashboard_widgets %}
+    <section class="panel">
+      <div class="panel-heading-row"><div><small class="kicker">MATRÍCULA</small><h3>Alumnos por grupo</h3></div><a href="{{ url_for('students') }}">Directorio →</a></div>
+      {% for group in group_stats %}
+        <div class="chart-row">
+          <a href="{{ url_for('students', group=group.group_name) }}">{{ group.group_name }}</a>
+          <div class="chart-track"><i style="--bar: {{ (group.students / group_max * 100)|round|int }}%"></i></div>
+          <b>{{ group.students }}<small>{% if group.inactive %} · {{ group.inactive }} inactivos{% endif %}</small></b>
+        </div>
+      {% else %}
+        <p class="empty">Aún no hay alumnos activos aprobados.</p>
+      {% endfor %}
+    </section>
+    {% endif %}
+    {% if 'teacher_grades' in dashboard_widgets %}
+    <section class="panel">
+      <div class="panel-heading-row"><div><small class="kicker">RENDIMIENTO</small><h3>Distribución de calificaciones</h3></div><a href="{{ url_for('grades') }}">Ver calificaciones →</a></div>
+      {% for band in grade_distribution %}
+        <div class="chart-row">
+          <span>{{ band.band }}</span>
+          <div class="chart-track grade-track"><i style="--bar: {{ (band.total / grade_max * 100)|round|int }}%"></i></div>
+          <b>{{ band.total }}</b>
+        </div>
+      {% else %}
+        <p class="empty">Las gráficas aparecerán cuando haya calificaciones registradas.</p>
+      {% endfor %}
+    </section>
+    {% endif %}
+  </div>
+  {% endif %}
+  </div>
+{% else %}
+<div class="student-dashboard">
+  <header class="student-dashboard-heading">
+    <div>
+      <small class="kicker">TU ESPACIO ACADÉMICO</small>
+      <h1>¡Hola, {{ student.full_name }}!</h1>
+      <p>Este es tu avance escolar. ¡Sigue dando lo mejor de ti!</p>
+      <div class="student-identity">
+        <span>Grupo <b>{{ student.group_name }}</b></span>
+        <span>Semestre <b>{{ student.semester or '—' }}°</b></span>
+        <span>Número de lista <b>{{ student.list_number }}</b></span>
+      </div>
+    </div>
+    <span class="pill student-role-pill">CECyTEM · Alumno</span>
+  </header>
+
+  <section class="student-hero">
+    <div class="student-hero-copy">
+      <span class="student-hero-kicker"><svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>CECYTO TE ACOMPAÑA</span>
+      <h2>{% if student_welcome %}¡Qué gusto verte!{% else %}¡Tú puedes lograrlo!{% endif %}</h2>
+      <p>Revisa tus actividades, organiza tus entregas y celebra cada avance.</p>
+      <a class="student-hero-link" href="{{ url_for('activities') }}">Ir a mis actividades <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
+    </div>
+    <img class="student-hero-mascot" src="{{ url_for('static', filename='img/CECYTO_02.png') }}" alt="" aria-hidden="true">
+  </section>
+
+{% if 'student_stats' in dashboard_widgets %}
+<div class="stats student-stats">
+  <article class="student-stat-card student-stat-activities"><span class="student-stat-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span><small>Actividades registradas</small><b>{{ stats.total }}</b><span class="student-stat-note">Asignadas a tu grupo</span></article>
+  <article class="student-stat-card student-stat-completed"><span class="student-stat-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg></span><small>Actividades completadas</small><b>{{ stats.completed }}</b><span class="student-stat-note">Tu esfuerzo cuenta</span></article>
+  <article class="student-stat-card student-stat-pending"><span class="student-stat-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg></span><small>Actividades pendientes</small><b>{{ stats.pending }}</b><span class="student-stat-note">Consulta tus entregas</span></article>
+  {% if stats.average != '—' %}
+    <article class="student-stat-card student-stat-average"><span class="student-stat-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-star"></use></svg></span><small>Promedio registrado</small><b>{{ stats.average }}</b><span class="student-stat-note">De tus calificaciones</span></article>
+  {% endif %}
+  <article class="student-stat-card student-stat-achievements"><span class="student-stat-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-trophy"></use></svg></span><small>Logros obtenidos</small><b>{{ achievements|selectattr('earned')|list|length }}</b><span class="student-stat-note">Reconocimientos ganados</span></article>
+</div>
+{% endif %}
+
+{% if 'student_upcoming' in dashboard_widgets %}
+  <div class="student-dashboard-grid">
+    <section class="panel upcoming-due-panel">
+      <div class="panel-heading-row">
+        <div><small class="kicker">PARA ORGANIZARTE</small><h3>Próximas entregas</h3></div>
+        <a href="{{ url_for('activities') }}">Ver actividades <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
+      </div>
+      {% for activity in upcoming_due %}
+        <article class="upcoming-due-item{% if activity.days_until <= 1 %} due-soon{% endif %}" data-deadline="{{ activity.due_date }}">
+          <span class="upcoming-due-date">
+            <b>{{ activity.due_label }}</b>
+            <small>{{ activity.date_display }}</small>
+          </span>
+          <div>
+            <b>{{ activity.title }}</b>
+            <small>{{ activity.subject }}</small>
+          </div>
+          <a class="secondary small" href="{{ url_for('activities') }}">Ver</a>
+        </article>
+      {% else %}
+        <p class="empty">No tienes entregas próximas pendientes. ¡Vas al día!</p>
+      {% endfor %}
+    </section>
+
+    {% if 'student_progress' in dashboard_widgets %}
+    <section class="panel student-progress-card">
+      <div class="student-progress-copy">
+        <span class="student-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg></span>
+        <div><small class="kicker">TU PROGRESO</small><h3>¡Cada actividad cuenta!</h3><p>{{ stats.completed }} de {{ stats.total }} actividades completadas.</p></div>
+      </div>
+      <div class="progress-ring" style="--progress: {{ stats.progress }}%"><span>{{ stats.progress }}%</span></div>
+      <div class="student-progress-track" role="progressbar" aria-label="Actividades completadas" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ stats.progress }}"><span style="--progress: {{ stats.progress }}%"></span></div>
+      <span class="student-progress-footnote">Avance de actividades registradas</span>
+    </section>
+    {% endif %}
+  </div>
+{% endif %}
+
+<div class="student-dashboard-lower">
+  {% if 'student_shortcuts' in dashboard_widgets %}
+  <section class="panel student-shortcuts-card">
+    <div class="student-panel-heading"><span class="student-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg></span><div><small class="kicker">A UN CLIC</small><h3>Accesos rápidos</h3></div></div>
+    <div class="student-shortcut-grid">
+      <a href="{{ url_for('activities') }}"><span class="student-shortcut-icon shortcut-green"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span><span><b>Mis actividades</b><small>Instrucciones y entregas</small></span><svg class="ui-icon shortcut-chevron" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
+      <a href="{{ url_for('grades') }}"><span class="student-shortcut-icon shortcut-gold"><svg class="ui-icon" aria-hidden="true"><use href="#icon-star"></use></svg></span><span><b>Calificaciones</b><small>Resultados y observaciones</small></span><svg class="ui-icon shortcut-chevron" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
+      <a href="{{ url_for('record') }}"><span class="student-shortcut-icon shortcut-blue"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clipboard"></use></svg></span><span><b>Mi registro</b><small>Consulta tu expediente</small></span><svg class="ui-icon shortcut-chevron" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
+      <a href="{{ url_for('student_achievements') }}"><span class="student-shortcut-icon shortcut-violet"><svg class="ui-icon" aria-hidden="true"><use href="#icon-trophy"></use></svg></span><span><b>Mis logros</b><small>Reconocimientos obtenidos</small></span><svg class="ui-icon shortcut-chevron" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="student-dashboard-side">
+    {% if 'student_recent' in dashboard_widgets %}
+    <section class="panel notifications-panel">
+      <div class="student-panel-heading">
+        <span class="student-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span>
+        <div><small class="kicker">TU TRABAJO ESCOLAR</small><h3>Actividades recientes</h3></div>
+        <a class="student-panel-action" href="{{ url_for('activities') }}">Ver actividades <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
+      </div>
+      {% for activity in recent %}
+        <article class="student-notification">
+          <span class="student-notification-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span>
+          <div><b>{{ activity.title }}</b><p>{{ activity.subject }} · {{ activity.status or 'Pendiente' }}</p><small>{{ activity.due_date or 'Sin fecha límite' }}</small></div>
+        </article>
+      {% else %}
+        <p class="empty student-empty-state">Aún no tienes actividades asignadas.</p>
+      {% endfor %}
+    </section>
+    <section class="panel notifications-panel">
+      <div class="student-panel-heading">
+        <span class="student-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg></span>
+        <div><small class="kicker">LO MÁS RECIENTE</small><h3>Notificaciones</h3></div>
+        <a class="student-panel-action" href="{{ url_for('notifications') }}">Ver todas <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
+      </div>
+      {% for notification in recent_notifications %}
+        <article class="student-notification{% if not notification.is_read %} is-unread{% endif %}">
+          <span class="student-notification-icon"><svg class="ui-icon" aria-hidden="true"><use href="{% if notification.type == 'grade' %}#icon-star{% elif notification.type == 'important' %}#icon-calendar{% elif notification.type == 'recognition' %}#icon-trophy{% else %}#icon-bell{% endif %}"></use></svg></span>
+          <div><b>{{ notification.title }}</b><p>{{ notification.message }}</p><small>{{ notification.event_date or (notification.created_at|string|truncate(10, True, '')) }}</small></div>
+          {% if not notification.is_read %}<span class="student-unread-dot" aria-label="Sin leer"></span>{% endif %}
+        </article>
+      {% else %}
+        <p class="empty student-empty-state">No tienes notificaciones recientes.</p>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if 'student_calendar' in dashboard_widgets %}
+    <section class="panel student-mini-calendar" data-student-mini-calendar>
+      <div class="student-panel-heading">
+        <span class="student-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg></span>
+        <div><small class="kicker">TUS FECHAS</small><h3>Calendario</h3></div>
+        <a class="student-panel-action" href="{{ url_for('student_calendar') }}">Abrir <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
+      </div>
+      <div class="student-mini-calendar-controls">
+        <button type="button" data-mini-calendar-prev aria-label="Mes anterior">‹</button>
+        <b data-mini-calendar-month></b>
+        <button type="button" data-mini-calendar-next aria-label="Mes siguiente">›</button>
+      </div>
+      <div class="student-mini-calendar-grid" data-mini-calendar-grid aria-label="Calendario de fechas de entrega"></div>
+      <p class="student-mini-calendar-legend"><span></span>Fecha de entrega</p>
+    </section>
+    {% endif %}
+  </div>
+
+  {% if 'student_achievements' in dashboard_widgets %}
+  <section class="panel student-achievement-preview">
+    <div class="student-panel-heading">
+      <span class="student-section-icon achievement-heading-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-trophy"></use></svg></span>
+      <div><small class="kicker">TUS RECONOCIMIENTOS</small><h3>Logros obtenidos</h3></div>
+      <a class="student-panel-action" href="{{ url_for('student_achievements') }}">Ver logros <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
+    </div>
+    <div class="student-achievement-list">
+      {% for achievement in achievements if achievement.earned %}
+        <article class="student-achievement-item"><span>{{ achievement.icon }}</span><div><b>{{ achievement.title }}</b><small>{{ achievement.description }}</small></div></article>
+      {% else %}
+        <p class="empty student-empty-state">Aún no tienes logros obtenidos. ¡Sigue avanzando!</p>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+</div>
+{% endif %}
+{% if role == 'student' and new_celebrations %}
+    <div class="celebration-backdrop" data-celebration-dialog
+         data-celebration-ids="{{ new_celebrations|map(attribute='id')|list|tojson|forceescape }}"
+         data-csrf-token="{{ csrf_token() }}" hidden>
+      <section class="celebration-dialog" role="dialog" aria-modal="true" aria-labelledby="celebration-title" aria-describedby="celebration-description">
+        <button class="celebration-close" type="button" data-celebration-close aria-label="Cerrar felicitación">×</button>
+        <small class="kicker">CECYTO CELEBRA CONTIGO</small>
+        <h2 id="celebration-title">¡Excelente trabajo!</h2>
+        <p id="celebration-description">Cada esfuerzo cuenta. Sigue avanzando hacia tus metas.</p>
+        <ul class="celebration-list">
+          {% for celebration in new_celebrations %}
+            <li><b>{{ celebration.title }}</b><span>{{ celebration.message }}</span></li>
+          {% endfor %}
+        </ul>
+        <div class="celebration-actions">
+          <button class="primary" type="button" data-celebration-close>¡Gracias, Cecyto!</button>
+          <a class="secondary" href="{{ url_for('student_achievements') }}">Ver mis logros</a>
+        </div>
+      </section>
+    </div>
+{% endif %}
+{% endblock %}

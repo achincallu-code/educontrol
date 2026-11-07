@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Configuración · EduControl{% endblock %}
+{% block content %}
+<div class="heading">
+  <div><small class="kicker">TU EXPERIENCIA</small><h1>Configuración</h1><p>Personaliza el aspecto y la comodidad de tu portal. Tus cambios son privados de tu cuenta.</p></div>
+</div>
+<form class="preferences-form" method="post" action="{{ url_for('student_settings') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="settings_form" value="1">
+  <input type="hidden" name="dashboard_widgets_submitted" value="1">
+  <input type="hidden" name="notification_types_submitted" value="1">
+  <input type="hidden" name="favorite_links_submitted" value="1">
+  <section class="panel settings-card profile-avatar-settings">
+    <div class="settings-card-heading"><span>🐯</span><div><h2>Foto de perfil</h2><p>Escoge una ilustración de Cecyto. Se mostrará junto a tu nombre en el perfil y la barra superior.</p></div></div>
+    <fieldset class="profile-avatar-picker">
+      <legend class="sr-only">Selecciona tu avatar</legend>
+      <label class="profile-avatar-option{% if not preferences.profile_avatar %} is-selected{% endif %}">
+        <input type="radio" name="profile_avatar" value="" {% if not preferences.profile_avatar %}checked{% endif %}>
+        <span class="profile-avatar-preview profile-avatar-initial">{{ session.get('full_name', 'U')[0]|upper }}</span>
+        <span class="profile-avatar-label">Inicial</span>
+      </label>
+      {% for avatar_id, filename in profile_avatars.items() %}
+        <label class="profile-avatar-option{% if preferences.profile_avatar == filename %} is-selected{% endif %}">
+          <input type="radio" name="profile_avatar" value="{{ filename }}" {% if preferences.profile_avatar == filename %}checked{% endif %}>
+          <img class="profile-avatar-preview" src="{{ url_for('static', filename='img/' ~ filename) }}" alt="" loading="lazy">
+          <span class="profile-avatar-label">Cecyto {{ avatar_id }}</span>
+        </label>
+      {% endfor %}
+    </fieldset>
+  </section>
+  <section class="panel settings-card">
+  <div class="settings-card-heading"><span>🎨</span><div><h2>Personalización visual</h2><p>Elige cómo quieres ver EduControl en cualquiera de tus dispositivos.</p></div></div>
+  <div class="preference-controls">
+    <label for="preference-theme">Color de acento
+      <select id="preference-theme" name="theme">
+        <option value="green" {% if preferences.theme == 'green' %}selected{% endif %}>Verde institucional</option>
+        <option value="blue" {% if preferences.theme == 'blue' %}selected{% endif %}>Azul océano</option>
+        <option value="violet" {% if preferences.theme == 'violet' %}selected{% endif %}>Morado</option>
+        <option value="rose" {% if preferences.theme == 'rose' %}selected{% endif %}>Rosa</option>
+        <option value="amber" {% if preferences.theme == 'amber' %}selected{% endif %}>Naranja</option>
+      </select>
+    </label>
+    <label for="preference-appearance">Apariencia
+      <select id="preference-appearance" name="appearance">
+        <option value="system" {% if preferences.appearance == 'system' %}selected{% endif %}>Automática (según mi dispositivo)</option>
+        <option value="light" {% if preferences.appearance == 'light' %}selected{% endif %}>Clara</option>
+        <option value="dark" {% if preferences.appearance == 'dark' %}selected{% endif %}>Oscura</option>
+      </select>
+    </label>
+    <label for="preference-text-size">Tamaño del texto
+      <select id="preference-text-size" name="text_size">
+        <option value="normal" {% if preferences.text_size == 'normal' %}selected{% endif %}>Normal</option>
+        <option value="large" {% if preferences.text_size == 'large' %}selected{% endif %}>Grande</option>
+        <option value="xlarge" {% if preferences.text_size == 'xlarge' %}selected{% endif %}>Extra grande</option>
+      </select>
+    </label>
+    <label for="preference-interface-size">Tamaño de botones y espacios
+      <select id="preference-interface-size" name="interface_size">
+        <option value="normal" {% if preferences.interface_size == 'normal' %}selected{% endif %}>Normal</option>
+        <option value="large" {% if preferences.interface_size == 'large' %}selected{% endif %}>Más grandes y espaciosos</option>
+      </select>
+    </label>
+  </div>
+  <label class="preference-checkbox">
+    <input type="checkbox" name="reduce_motion" {% if preferences.reduce_motion %}checked{% endif %}>
+    <span><b>Reducir animaciones</b><small>Limita movimientos y transiciones para una experiencia más tranquila.</small></span>
+  </label>
+  </section>
+  <section class="panel settings-card">
+    <div class="settings-card-heading"><span>⌂</span><div><h2>Inicio</h2><p>Elige los bloques que quieres consultar al entrar.</p></div></div>
+  {% if role == 'teacher' %}
+    {% set dashboard_options = [
+      ('teacher_stats', 'Resumen general', 'Cantidad de alumnos, solicitudes, actividades y promedio.'),
+      ('teacher_quick', 'Botones de acceso rápido', 'Enlaces para abrir las secciones que más utilizas.'),
+      ('teacher_recent', 'Actividades recientes', 'Muestra las actividades creadas más recientemente.'),
+      ('teacher_groups', 'Alumnos por grupo', 'Muestra cuántos alumnos hay en cada grupo.'),
+      ('teacher_grades', 'Resumen de calificaciones', 'Muestra cuántas calificaciones hay en cada nivel.')
+    ] %}
+  {% else %}
+    {% set dashboard_options = [
+      ('student_stats', 'Resumen de mis estudios', 'Cantidad de actividades, actividades completadas y promedio.'),
+      ('student_upcoming', 'Próximas entregas', 'Muestra hasta cuatro actividades pendientes con fecha cercana.'),
+      ('student_progress', 'Mi avance', 'Muestra qué porcentaje de mis actividades he completado.'),
+      ('student_shortcuts', 'Accesos a mis estudios', 'Enlaces a mi registro, actividades, calificaciones y logros.'),
+      ('student_recent', 'Actividades recientes', 'Muestra las actividades que tengo asignadas.'),
+      ('student_calendar', 'Fechas de entrega', 'Enlace al calendario con las fechas de mis actividades.'),
+      ('student_achievements', 'Mis reconocimientos', 'Muestra los logros que he obtenido.')
+    ] %}
+  {% endif %}
+  <fieldset class="dashboard-preferences">
+    <legend>Elige qué aparece en Inicio</legend>
+    <p>Marca las secciones que quieres ver al entrar. Si quitas la marca, esa sección no aparecerá. Este cambio solo afecta a tu cuenta.</p>
+    <div class="dashboard-preference-options">
+      {% for widget, label, description in dashboard_options %}
+        <label class="preference-checkbox">
+          <input type="checkbox" name="dashboard_widgets" value="{{ widget }}" {% if widget in dashboard_widgets %}checked{% endif %}>
+          <span><b>{{ label }}</b><small>{{ description }}</small></span>
+        </label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  </section>
+  <section class="panel settings-card">
+    <div class="settings-card-heading"><span>♧</span><div><h2>Avisos</h2><p>Controla qué tipos de notificaciones aparecen en tu bandeja y contador.</p></div></div>
+  <fieldset class="dashboard-preferences">
+    <legend>Elige tus avisos</legend>
+    <p>Marca los avisos que quieres ver en Notificaciones y en el contador del menú.</p>
+    <div class="dashboard-preference-options">
+      {% for kind, label in notification_options.items() %}
+        <label class="preference-checkbox">
+          <input type="checkbox" name="notification_types" value="{{ kind }}" {% if kind in notification_types %}checked{% endif %}>
+          <span><b>{{ label }}</b><small>Los avisos que no marques se guardarán, pero no aparecerán en tu lista.</small></span>
+        </label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  </section>
+  <section class="panel settings-card">
+    <div class="settings-card-heading"><span>☆</span><div><h2>Accesos y calendario</h2><p>Organiza tus secciones favoritas y la vista de calendario.</p></div></div>
+  <fieldset class="dashboard-preferences">
+    <legend>Mis accesos favoritos</legend>
+    <p>Elige hasta tres secciones. Aparecerán juntas en el menú para encontrarlas rápido.</p>
+    <div class="dashboard-preference-options" data-favorite-options>
+      {% for endpoint, label in favorite_options.items() %}
+        <label class="preference-checkbox">
+          <input type="checkbox" name="favorite_links" value="{{ endpoint }}" {% if endpoint in favorite_links %}checked{% endif %}>
+          <span><b>{{ label }}</b><small>Aparecerá en la lista de accesos favoritos del menú.</small></span>
+        </label>
+      {% endfor %}
+    </div>
+    <small class="favorite-limit-message" data-favorite-limit-message aria-live="polite"></small>
+  </fieldset>
+  <div class="preference-controls">
+    <label for="preference-calendar-view">Cómo ver el calendario
+      <select id="preference-calendar-view" name="calendar_view">
+        <option value="month" {% if preferences.calendar_view == 'month' %}selected{% endif %}>Por mes</option>
+        <option value="list" {% if preferences.calendar_view == 'list' %}selected{% endif %}>Como lista de fechas</option>
+      </select>
+      <small>El calendario abrirá en esta vista. También puedes cambiarla desde el calendario.</small>
+    </label>
+  </div>
+  <label class="preference-checkbox">
+    <input type="checkbox" name="show_cecyto" {% if preferences.show_cecyto %}checked{% endif %}>
+    <span><b>Mostrar a Cecyto en las páginas</b><small>Desmarca esta opción si prefieres ocultar al acompañante y sus mensajes.</small></span>
+  </label>
+  </section>
+  <button class="primary" type="submit">Guardar mis preferencias</button>
+</form>
+{% if student %}
+<section class="panel settings-card">
+  <div class="settings-card-heading"><span>◎</span><div><h2>Datos de la cuenta</h2><p>Solo el docente puede modificar la información escolar oficial.</p></div></div>
+  <div class="settings-details">
+    <div><small>Nombre completo</small><b>{{ student.full_name }}</b></div>
+    <div><small>Correo electrónico</small><b>{{ student.email or 'No registrado' }}</b></div>
+    <div><small>Grupo</small><b>{{ student.group_name }}</b></div>
+    <div><small>Semestre</small><b>{{ student.semester or '—' }}{% if student.semester %}°{% endif %}</b></div>
+    <div><small>Número de lista</small><b>{{ student.list_number }}</b></div>
+  </div>
+</section>
+{% endif %}
+<section class="panel settings-card">
+  <div class="settings-card-heading"><span>🔐</span><div><h2>Privacidad y seguridad</h2><p>Las preferencias guardadas aquí no afectan a otras cuentas.</p></div></div>
+  <ul class="settings-security-list">
+    {% if student %}
+      <li>Solo puedes consultar actividades, registros y calificaciones de tu cuenta.</li>
+      <li>Los datos oficiales y las calificaciones solo los modifica el docente autorizado.</li>
+    {% else %}
+      <li>Las preferencias se guardan por separado para cada cuenta docente.</li>
+      <li>Las preferencias no cambian los permisos ni los datos académicos del portal.</li>
+    {% endif %}
+    <li>Cierra tu sesión si utilizas un dispositivo compartido.</li>
+  </ul>
+  <form method="post" action="{{ url_for('logout') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="secondary" type="submit">Cerrar mi sesión</button>
+  </form>
+</section>
+{% endblock %}

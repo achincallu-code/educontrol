@@ -1,0 +1,207 @@
+<section class="auth-experience">
+  <div class="auth-shell{% if auth_mode == 'register' %} is-register{% endif %}"
+       data-auth-shell
+       data-auth-mode="{{ auth_mode }}">
+    <aside class="auth-showcase" aria-label="Bienvenida de EduControl">
+      <a class="auth-brand" href="{{ url_for('login') }}" aria-label="CECyTEM EduControl">
+        <span class="auth-brand-mark"><img src="{{ url_for('static', filename='img/logocecytem.jpeg') }}" alt=""></span>
+        <span><strong>EduControl</strong><small>CECyTEM · PORTAL ESCOLAR</small></span>
+      </a>
+      <nav class="auth-top-switch" aria-label="Cambiar entre iniciar sesión y crear cuenta">
+        <a class="auth-top-switch-link auth-top-switch-register"
+           href="{{ url_for('register') }}"
+           data-auth-switch="register"
+           aria-controls="auth-register"
+           aria-hidden="{{ 'true' if auth_mode == 'register' else 'false' }}"
+           {% if auth_mode == 'register' %}inert{% endif %}>
+          <span>¿No tienes cuenta?</span>
+          <strong>Regístrate <b aria-hidden="true">→</b></strong>
+        </a>
+        <a class="auth-top-switch-link auth-top-switch-login"
+           href="{{ url_for('login') }}"
+           data-auth-switch="login"
+           aria-controls="auth-login"
+           aria-hidden="{{ 'false' if auth_mode == 'register' else 'true' }}"
+           {% if auth_mode != 'register' %}inert{% endif %}>
+          <span>¿Ya tienes cuenta?</span>
+          <strong>Inicia sesión <b aria-hidden="true">→</b></strong>
+        </a>
+      </nav>
+
+      <span class="auth-orbit auth-orbit-one" aria-hidden="true"></span>
+      <span class="auth-orbit auth-orbit-two" aria-hidden="true"></span>
+      <span class="auth-school-mark" aria-hidden="true"><svg class="ui-icon"><use href="#icon-book"></use></svg></span>
+
+      <div class="auth-showcase-copy auth-copy-login"{% if auth_mode == 'register' %} aria-hidden="true"{% endif %} data-auth-copy="login">
+        <span class="auth-eyebrow"><span></span> TU COMUNIDAD, TU FUTURO</span>
+        <h1>¡Tu esfuerzo<br>nos inspira!</h1>
+        <p>Aprende, avanza y alcanza tus metas. Cecyto te acompaña en cada paso.</p>
+      </div>
+      <div class="auth-showcase-copy auth-copy-register"{% if auth_mode != 'register' %} aria-hidden="true"{% endif %} data-auth-copy="register">
+        <span class="auth-eyebrow"><span></span> QUÉ BUENO QUE ESTÁS AQUÍ</span>
+        <h1>¡Bienvenido<br>a tu comunidad!</h1>
+        <p>Tu camino comienza con una cuenta. Prepárate para descubrir todo lo que puedes lograr.</p>
+      </div>
+
+      <div class="auth-showcase-note">
+        <span class="auth-note-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-shield"></use></svg></span>
+        <span><strong>Tu espacio escolar</strong><small>Seguro, cercano y hecho para ti</small></span>
+      </div>
+      <span class="auth-showcase-caption">FORMANDO JÓVENES CON VALORES Y TECNOLOGÍA</span>
+    </aside>
+
+    <div class="auth-form-stage" data-auth-form-stage>
+      <section class="auth-form-panel auth-form-login{% if auth_mode == 'login' %} is-active{% endif %}"
+               id="auth-login"
+               data-auth-panel="login"
+               aria-labelledby="auth-login-title"
+               aria-hidden="{{ 'false' if auth_mode == 'login' else 'true' }}"
+               {% if auth_mode != 'login' %}inert{% endif %}>
+        <div class="auth-form-heading">
+          <span class="auth-kicker"><span class="auth-kicker-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-lock"></use></svg></span> ACCESO A TU PORTAL</span>
+          <h2 id="auth-login-title" tabindex="-1">Iniciar sesión</h2>
+          <p>Qué gusto tenerte de vuelta. Ingresa tus datos para continuar.</p>
+        </div>
+
+        <form method="post" action="{{ url_for('login') }}" data-auth-submit>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="auth-field">
+            <label for="login-identifier">Correo o nombre de usuario</label>
+            <div class="auth-input-wrap">
+              <svg class="ui-icon auth-input-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
+              <input id="login-identifier" name="identifier" autocomplete="username" required
+                     placeholder="correo@ejemplo.com o usuario">
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label for="login-password">Contraseña</label>
+            <div class="auth-input-wrap">
+              <svg class="ui-icon auth-input-icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
+              <input id="login-password" type="password" name="password" autocomplete="current-password"
+                     required placeholder="Tu contraseña">
+              <button class="auth-password-toggle" type="button" data-password-toggle
+                      aria-controls="login-password" aria-label="Mostrar contraseña">Mostrar</button>
+            </div>
+          </div>
+
+          <label class="auth-remember" for="login-remember">
+            <input id="login-remember" type="checkbox" name="remember">
+            <span class="auth-checkmark" aria-hidden="true"><svg class="ui-icon"><use href="#icon-check"></use></svg></span>
+            <span>Recordar sesión en este dispositivo</span>
+          </label>
+
+          <button class="auth-submit" type="submit">
+            <span>Entrar al portal</span>
+            <svg class="ui-icon auth-submit-arrow" aria-hidden="true"><use href="#icon-chevron"></use></svg>
+            <span class="auth-spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+
+      </section>
+
+      <section class="auth-form-panel auth-form-register{% if auth_mode == 'register' %} is-active{% endif %}"
+               id="auth-register"
+               data-auth-panel="register"
+               aria-labelledby="auth-register-title"
+               aria-hidden="{{ 'false' if auth_mode == 'register' else 'true' }}"
+               {% if auth_mode != 'register' %}inert{% endif %}>
+        <div class="auth-form-heading">
+          <span class="auth-kicker"><span class="auth-kicker-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-graduation"></use></svg></span> NUEVO ALUMNO</span>
+          <h2 id="auth-register-title" tabindex="-1">Crear cuenta</h2>
+          <p>Completa tus datos escolares para comenzar.</p>
+        </div>
+
+        <form method="post" action="{{ url_for('register') }}" data-auth-submit>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="auth-field-grid">
+            <div class="auth-field">
+              <label for="register-first-name">Nombre(s)</label>
+              <div class="auth-input-wrap">
+                <svg class="ui-icon auth-input-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
+                <input id="register-first-name" name="first_name" maxlength="80" autocomplete="given-name"
+                       required placeholder="Tu nombre o nombres">
+              </div>
+            </div>
+            <div class="auth-field">
+              <label for="register-last-name">Apellidos</label>
+              <div class="auth-input-wrap">
+                <svg class="ui-icon auth-input-icon" aria-hidden="true"><use href="#icon-users"></use></svg>
+                <input id="register-last-name" name="last_name" maxlength="100" autocomplete="family-name"
+                       required placeholder="Tus apellidos">
+              </div>
+            </div>
+          </div>
+
+          <div class="auth-field-grid">
+            <div class="auth-field">
+              <label for="register-group">Grupo</label>
+              <div class="auth-input-wrap">
+                <svg class="ui-icon auth-input-icon" aria-hidden="true"><use href="#icon-book"></use></svg>
+                <input id="register-group" name="group_name" maxlength="20" required placeholder="Ej. 306">
+              </div>
+            </div>
+            <div class="auth-field">
+              <label for="register-list-number">Número de lista</label>
+              <div class="auth-input-wrap">
+                <svg class="ui-icon auth-input-icon" aria-hidden="true"><use href="#icon-clipboard"></use></svg>
+                <input id="register-list-number" name="list_number" type="number" min="1" max="9999"
+                       required placeholder="Ej. 15">
+              </div>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label for="register-semester">Semestre</label>
+            <div class="auth-input-wrap auth-select-wrap">
+              <svg class="ui-icon auth-input-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>
+              <select id="register-semester" name="semester" required>
+                <option value="">Selecciona tu semestre</option>
+                {% for semester in range(1, 7) %}<option value="{{ semester }}">{{ semester }}° semestre</option>{% endfor %}
+              </select>
+              <svg class="ui-icon auth-select-arrow" aria-hidden="true"><use href="#icon-chevron"></use></svg>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label for="register-email">Correo electrónico</label>
+            <div class="auth-input-wrap">
+              <svg class="ui-icon auth-input-icon" aria-hidden="true"><use href="#icon-user"></use></svg>
+              <input id="register-email" name="email" type="email" maxlength="254" autocomplete="email"
+                     required placeholder="correo@ejemplo.com">
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label for="register-password">Contraseña <span class="auth-label-hint">8 a 128 caracteres</span></label>
+            <div class="auth-input-wrap">
+              <svg class="ui-icon auth-input-icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
+              <input id="register-password" type="password" name="password" minlength="8" maxlength="128"
+                     autocomplete="new-password" required placeholder="Crea una contraseña"
+                     data-password-meter-input>
+              <button class="auth-password-toggle" type="button" data-password-toggle
+                      aria-controls="register-password" aria-label="Mostrar contraseña">Mostrar</button>
+            </div>
+            <div class="auth-password-meter" data-password-meter aria-live="polite">
+              <span class="auth-meter-track" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+              <span class="auth-meter-label" data-password-meter-label>Usa al menos 8 caracteres</span>
+            </div>
+          </div>
+
+          <button class="auth-submit" type="submit">
+            <span>Enviar registro</span>
+            <svg class="ui-icon auth-submit-arrow" aria-hidden="true"><use href="#icon-chevron"></use></svg>
+            <span class="auth-spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+
+        <aside class="auth-approval-note">
+          <svg class="ui-icon" aria-hidden="true"><use href="#icon-shield"></use></svg>
+          <span>Tu cuenta necesita aprobación del docente antes de ingresar.</span>
+        </aside>
+      </section>
+    </div>
+  </div>
+</section>

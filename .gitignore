@@ -1,0 +1,8 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+educ_control.db
+.env
+.env.*
+!.env.example

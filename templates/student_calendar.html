@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Calendario escolar · EduControl{% endblock %}
+{% block content %}
+<div class="heading calendar-page-heading">
+  <div>
+    <small class="kicker">{% if is_teacher %}ORGANIZACIÓN ESCOLAR{% else %}ORGANIZA TUS ENTREGAS{% endif %}</small>
+    <h1>{% if is_teacher %}Calendario escolar{% else %}Mi calendario escolar{% endif %}</h1>
+    <p>{% if is_teacher %}Consulta entregas, actividades y fechas importantes de los grupos.{% else %}Consulta las fechas de entrega y avisos para tu grupo {{ student.group_name }}.{% endif %}</p>
+  </div>
+  {% if not is_teacher %}<span class="pill calendar-group-pill"><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>Grupo {{ student.group_name }}</span>{% endif %}
+</div>
+
+<section class="panel calendar-panel student-full-calendar" aria-label="Calendario escolar interactivo">
+  <div class="calendar-heading">
+    <div class="calendar-title">
+      <span class="calendar-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg></span>
+      <div><small class="kicker">AGENDA ACADÉMICA</small><h2>Actividades y fechas importantes</h2></div>
+    </div>
+    <div class="calendar-controls" data-calendar-controls {% if user_preferences.calendar_view == 'list' %}hidden{% endif %}>
+      <button type="button" class="calendar-nav" data-calendar-prev aria-label="Mes anterior"><svg class="ui-icon calendar-arrow-left" aria-hidden="true"><use href="#icon-chevron"></use></svg></button>
+      <strong data-calendar-month aria-live="polite"></strong>
+      <button type="button" class="calendar-nav" data-calendar-next aria-label="Mes siguiente"><svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></button>
+    </div>
+  </div>
+  <div class="calendar-view-switch" role="group" aria-label="Forma de ver el calendario">
+    <button class="secondary small" type="button" data-calendar-view-toggle="month" aria-pressed="{{ 'true' if user_preferences.calendar_view == 'month' else 'false' }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>Vista mensual</button>
+    <button class="secondary small" type="button" data-calendar-view-toggle="list" aria-pressed="{{ 'true' if user_preferences.calendar_view == 'list' else 'false' }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clipboard"></use></svg>Vista de lista</button>
+  </div>
+  <div class="school-calendar" data-school-calendar data-calendar-view="{{ user_preferences.calendar_view }}"
+       {% if user_preferences.calendar_view == 'list' %}hidden{% endif %}
+       data-calendar-events='{{ calendar_events|tojson }}'
+       aria-label="Calendario interactivo de actividades y fechas importantes"></div>
+  <div class="calendar-legend" data-calendar-legend {% if user_preferences.calendar_view == 'list' %}hidden{% endif %} aria-label="Leyenda del calendario">
+    <span><i class="legend-dot activity-dot"></i><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>Entrega próxima</span>
+    <span><i class="legend-dot overdue-dot"></i><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>Vencida</span>
+    <span><i class="legend-dot complete-dot"></i><svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>Completada</span>
+    <span><i class="legend-dot important-dot"></i><svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg>Fecha importante</span>
+  </div>
+</section>
+
+<section class="panel calendar-upcoming-panel" aria-labelledby="calendar-upcoming-title">
+  <div class="calendar-events-heading">
+    <div><small class="kicker">A CONTINUACIÓN</small><h2 id="calendar-upcoming-title">Próximos eventos</h2></div>
+    <a class="calendar-all-events" href="#calendar-agenda"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clipboard"></use></svg>Ver agenda</a>
+  </div>
+  {% if upcoming_events %}
+    <div class="calendar-upcoming-list">
+      {% for event in upcoming_events %}
+        <article class="calendar-upcoming-card event-{{ event.type }} state-{{ event.state }}">
+          <span class="calendar-event-icon">
+            <svg class="ui-icon" aria-hidden="true">
+              <use href="{% if event.state == 'completed' %}#icon-check{% elif event.type == 'important' %}#icon-bell{% elif event.state == 'overdue' %}#icon-clock{% else %}#icon-book{% endif %}"></use>
+            </svg>
+          </span>
+          <time datetime="{{ event.date }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>{{ event.date }}</time>
+          <div><b>{{ event.title }}</b><p>{{ event.detail }}</p></div>
+          <span class="event-state">{{ event.label }}</span>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="calendar-upcoming-empty">No hay próximos eventos registrados.</p>
+  {% endif %}
+</section>
+
+{% if is_teacher %}
+<section class="panel calendar-manage" aria-labelledby="calendar-manage-title">
+  <div class="calendar-manage-heading">
+    <span class="calendar-section-icon calendar-manage-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg></span>
+    <div class="calendar-manage-copy">
+      <small class="kicker">COMUNICACIÓN ESCOLAR</small><h2 id="calendar-manage-title">Publicar fecha importante</h2>
+      <p>El aviso se guardará en notificaciones y aparecerá en el calendario.</p>
+    </div>
+    <a class="secondary calendar-admin-link" href="{{ url_for('notifications') }}">Administrar notificaciones <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
+  </div>
+  <form method="post" action="{{ url_for('notifications') }}" class="calendar-event-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Título<input name="title" maxlength="160" required placeholder="Ej. Consejo técnico escolar"></label>
+    <label>Descripción<input name="message" maxlength="1000" required placeholder="Información para los alumnos"></label>
+    <label>Fecha<input type="date" name="event_date" required></label>
+    <label>Destinatarios<select name="group_name"><option value="">Todos los grupos</option>{% for group in groups %}<option value="{{ group.group_name }}">Grupo {{ group.group_name }}</option>{% endfor %}</select></label>
+    <button class="primary" type="submit"><svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>Publicar fecha</button>
+  </form>
+</section>
+{% endif %}
+
+<section class="panel calendar-events-panel" id="calendar-agenda">
+  <div class="calendar-events-heading">
+    <div><small class="kicker">AGENDA COMPLETA</small><h2 data-calendar-events-title>{% if user_preferences.calendar_view == 'list' %}Todas las actividades y avisos{% else %}Actividades y avisos con fecha{% endif %}</h2></div>
+    <button type="button" class="calendar-clear-filter" data-calendar-clear hidden>Ver todos los eventos</button>
+  </div>
+  <div class="calendar-event-list" data-calendar-event-list>
+    {% for event in events %}
+      <article class="calendar-event-card event-{{ event.type }} state-{{ event.state }}"
+               data-calendar-event data-event-date="{{ event.date }}">
+        <span class="calendar-event-icon">
+          <svg class="ui-icon" aria-hidden="true">
+            <use href="{% if event.state == 'completed' %}#icon-check{% elif event.type == 'important' %}#icon-bell{% elif event.state == 'overdue' %}#icon-clock{% else %}#icon-book{% endif %}"></use>
+          </svg>
+        </span>
+        <time datetime="{{ event.date }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>{{ event.date }}</time>
+        <div><b>{{ event.title }}</b><p>{{ event.detail }}</p></div>
+        <span class="event-state">{{ event.label }}</span>
+      </article>
+    {% endfor %}
+    <p class="empty" data-calendar-empty hidden>No hay actividades ni avisos con fecha.</p>
+  </div>
+</section>
+{% endblock %}

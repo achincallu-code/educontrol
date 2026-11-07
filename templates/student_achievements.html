@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Mis logros · EduControl{% endblock %}
+{% block content %}
+{% set achievement_progress = namespace(total=0) %}
+{% if achievements %}
+  {% set achievement_progress.total = (earned_count / achievements|length * 100)|round|int %}
+{% endif %}
+<div class="heading achievements-page-heading">
+  <div>
+    <small class="kicker">RECONOCEMOS TU ESFUERZO</small>
+    <h1>Mis logros</h1>
+    <p>Cada medalla se obtiene con tus avances académicos registrados.</p>
+  </div>
+  <span class="pill achievements-earned-pill"><svg class="ui-icon" aria-hidden="true"><use href="#icon-trophy"></use></svg>{{ earned_count }} de {{ achievements|length }} desbloqueados</span>
+</div>
+
+<section class="panel achievements-hero" aria-label="Resumen de tus reconocimientos">
+  <div class="achievements-hero-copy">
+    <span class="achievements-hero-kicker"><svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg>TU CAMINO DE APRENDIZAJE</span>
+    <h2>{% if earned_count %}¡Cada avance cuenta!{% else %}Tus primeros logros te esperan{% endif %}</h2>
+    <p>Completa actividades, comparte tus entregas y sigue aprendiendo para desbloquear reconocimientos.</p>
+    <div class="achievements-hero-stats">
+      <span><b>{{ completed }}</b><small>completadas</small></span>
+      <span><b>{{ reviewed }}</b><small>revisadas</small></span>
+      <span><b>{{ on_time }}</b><small>a tiempo</small></span>
+      <span><b>{{ average if average is not none else '—' }}</b><small>promedio</small></span>
+    </div>
+  </div>
+  <div class="achievements-hero-art" aria-hidden="true">
+    <div class="achievements-progress-orbit" style="--achievement-progress: {{ achievement_progress.total }}%">
+      <div><strong>{{ earned_count }}<small>/{{ achievements|length }}</small></strong><span>logros</span></div>
+    </div>
+    <span class="achievements-sparkle sparkle-one">✦</span>
+    <span class="achievements-sparkle sparkle-two">✦</span>
+  </div>
+</section>
+
+<section class="achievements-collection" aria-labelledby="earned-achievements-title">
+  <div class="achievements-section-heading">
+    <div>
+      <span class="achievement-section-icon earned-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-trophy"></use></svg></span>
+      <div><small class="kicker">MEDALLAS GANADAS</small><h2 id="earned-achievements-title">Logros desbloqueados</h2></div>
+    </div>
+    <span class="achievement-section-count">{{ earned_count }} obtenidos</span>
+  </div>
+  {% if earned_count %}
+    <div class="achievement-grid achievement-grid-modern">
+      {% for achievement in achievements if achievement.earned %}
+        <article class="panel achievement-card achievement-card-modern is-earned achievement-tone-{{ loop.index0 % 3 }}" style="--achievement-order: {{ loop.index0 }}">
+          <div class="achievement-card-topline"><span>RECONOCIMIENTO OBTENIDO</span><svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg></div>
+          <div class="achievement-medal-wrap">
+            <span class="achievement-medal achievement-medal-modern" aria-hidden="true">{{ achievement.icon }}</span>
+            <span class="achievement-medal-ribbon" aria-hidden="true"><svg class="ui-icon"><use href="#icon-star"></use></svg></span>
+          </div>
+          <h3>{{ achievement.title }}</h3>
+          <p>{{ achievement.description }}</p>
+          <span class="achievement-status achievement-status-modern"><svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>¡Logro desbloqueado!</span>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="achievement-empty-state"><span class="achievement-empty-medal">✦</span><p>Aún no hay medallas desbloqueadas. ¡Tu primer paso puede ser el comienzo!</p></div>
+  {% endif %}
+</section>
+
+<section class="achievements-collection achievements-pending-collection" aria-labelledby="pending-achievements-title">
+  <div class="achievements-section-heading">
+    <div>
+      <span class="achievement-section-icon pending-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg></span>
+      <div><small class="kicker">SIGUE AVANZANDO</small><h2 id="pending-achievements-title">Próximos reconocimientos</h2></div>
+    </div>
+    <span class="achievement-section-count">{{ achievements|length - earned_count }} por desbloquear</span>
+  </div>
+  {% if earned_count < achievements|length %}
+    <div class="achievement-grid achievement-grid-modern">
+      {% for achievement in achievements if not achievement.earned %}
+        {% set progress = namespace(value=0, label='Sigue avanzando') %}
+        {% if achievement.key == 'first-step' %}
+          {% set progress.value = 100 if completed >= 1 else 0 %}
+          {% set progress.label = completed|string ~ ' / 1 actividad' %}
+        {% elif achievement.key == 'five-activities' %}
+          {% set progress.value = (completed / 5 * 100)|round|int if completed < 5 else 100 %}
+          {% set progress.label = (completed if completed < 5 else 5)|string ~ ' / 5 actividades' %}
+        {% elif achievement.key == 'first-review' %}
+          {% set progress.value = 100 if reviewed >= 1 else 0 %}
+          {% set progress.label = reviewed|string ~ ' / 1 revisada' %}
+        {% elif achievement.key == 'excellent-grade' %}
+          {% if average is not none %}
+            {% set progress.value = (average / 9 * 100)|round|int if average < 9 else 100 %}
+            {% set progress.label = average|string ~ ' / 9 promedio' %}
+          {% else %}
+            {% set progress.label = 'Esperando calificaciones' %}
+          {% endif %}
+        {% elif achievement.key == 'on-time' %}
+          {% set progress.value = 100 if on_time >= 1 else 0 %}
+          {% set progress.label = on_time|string ~ ' / 1 entrega a tiempo' %}
+        {% elif achievement.key == 'improved-grade' %}
+          {% set progress.value = 100 if improved else 0 %}
+          {% set progress.label = 'Mejora registrada' if improved else 'Aún no se registra una mejora' %}
+        {% elif achievement.key == 'all-complete' %}
+          {% if total >= 3 %}
+            {% set progress.value = (completed / total * 100)|round|int %}
+            {% set progress.label = completed|string ~ ' / ' ~ total|string ~ ' actividades completadas' %}
+          {% else %}
+            {% set progress.value = (completed / 3 * 100)|round|int if completed < 3 else 100 %}
+            {% set progress.label = completed|string ~ ' / 3 completadas como mínimo' %}
+          {% endif %}
+        {% endif %}
+        <article class="panel achievement-card achievement-card-modern is-locked achievement-tone-{{ loop.index0 % 3 }}">
+          <div class="achievement-card-topline"><span>PRÓXIMA MEDALLA</span><svg class="ui-icon" aria-hidden="true"><use href="#icon-shield"></use></svg></div>
+          <div class="achievement-medal-wrap">
+            <span class="achievement-medal achievement-medal-modern" aria-hidden="true">{{ achievement.icon }}</span>
+            <span class="achievement-lock-mark" aria-hidden="true">⌑</span>
+          </div>
+          <h3>{{ achievement.title }}</h3>
+          <p>{{ achievement.description }}</p>
+          <div class="achievement-progress-details">
+            <div class="achievement-progress-label"><span>Progreso</span><b>{{ progress.label }}</b></div>
+            {% if achievement.key != 'excellent-grade' or average is not none %}
+              <div class="achievement-progress-track" role="progressbar" aria-label="Progreso para {{ achievement.title }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ progress.value }}"><span style="--achievement-fill: {{ progress.value }}%"></span></div>
+            {% else %}
+              <div class="achievement-progress-track achievement-progress-unavailable" aria-label="Sin calificaciones para calcular el progreso"><span></span></div>
+            {% endif %}
+          </div>
+          <span class="achievement-status achievement-status-modern"><svg class="ui-icon" aria-hidden="true"><use href="#icon-lock"></use></svg>En progreso</span>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="achievement-empty-state achievement-complete-state"><span class="achievement-empty-medal">★</span><p>¡Desbloqueaste todos los reconocimientos disponibles! Sigue aprendiendo y celebrando tus avances.</p></div>
+  {% endif %}
+</section>
+{% endblock %}

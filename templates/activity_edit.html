@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Editar actividad · EduControl{% endblock %}
+{% block content %}
+<div class="heading activity-edit-heading"><div><small class="kicker">ADMINISTRACIÓN</small><h1>Editar actividad</h1><p>Los registros revisados y las calificaciones existentes se conservan.</p></div><a class="secondary" href="{{ url_for('activities') }}">← Volver a actividades</a></div>
+<section class="panel activity-create-panel edit-form-panel">
+  <div class="activity-create-heading">
+    <span class="activity-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span>
+    <div><small class="kicker">DETALLES DE LA ASIGNACIÓN</small><h2>{{ activity.title }}</h2><p>Actualiza las indicaciones sin perder las calificaciones existentes.</p></div>
+  </div>
+  <form method="post" class="activity-form activity-form-modern">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="activity-form-grid">
+      <div class="activity-field">
+        <label for="edit-activity-title">Nombre de la actividad <span aria-hidden="true">*</span></label>
+        <input id="edit-activity-title" name="title" maxlength="160" required value="{{ activity.title }}">
+      </div>
+      <div class="activity-field">
+        <label for="edit-activity-subject">Materia <span aria-hidden="true">*</span></label>
+        <input id="edit-activity-subject" name="subject" maxlength="160" required value="{{ activity.subject }}">
+      </div>
+      <div class="activity-field">
+        <label for="edit-activity-group">Grupo <span aria-hidden="true">*</span></label>
+        <input id="edit-activity-group" name="group_name" list="available-groups" maxlength="20" required value="{{ activity.group_name }}">
+      </div>
+      <div class="activity-field">
+        <label for="edit-activity-partial">Parcial <span aria-hidden="true">*</span></label>
+        <input id="edit-activity-partial" name="partial" maxlength="160" required value="{{ activity.partial }}">
+      </div>
+      <div class="activity-field activity-field-date">
+        <label for="edit-activity-date">Fecha de entrega <span class="activity-optional">Opcional</span></label>
+        <input id="edit-activity-date" type="date" name="due_date" value="{{ activity.due_date or '' }}">
+      </div>
+      <div class="activity-field activity-field-description">
+        <label for="edit-activity-description">Instrucciones <span class="activity-optional">Opcional</span></label>
+        <textarea id="edit-activity-description" name="description" rows="4" maxlength="5000">{{ activity.description or '' }}</textarea>
+      </div>
+    </div>
+    <datalist id="available-groups">{% for group in groups %}<option value="{{ group.group_name }}">{% endfor %}<option value="{{ activity.group_name }}"></datalist>
+    <div class="activity-form-actions">
+      <small><span aria-hidden="true">*</span> Campos obligatorios</small>
+      <button class="primary" type="submit"><svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>Guardar cambios</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Calificaciones · EduControl{% endblock %}
+{% block content %}
+{% set summary = namespace(total=0, graded=0, grade_sum=0, reviewed=0, submitted=0, pending=0) %}
+{% for r in rows %}
+  {% set summary.total = summary.total + 1 %}
+  {% if r.grade is not none %}
+    {% set summary.graded = summary.graded + 1 %}
+    {% set summary.grade_sum = summary.grade_sum + r.grade %}
+  {% endif %}
+  {% if r.status == 'Revisada' %}
+    {% set summary.reviewed = summary.reviewed + 1 %}
+  {% elif r.status == 'Entregada' %}
+    {% set summary.submitted = summary.submitted + 1 %}
+  {% else %}
+    {% set summary.pending = summary.pending + 1 %}
+  {% endif %}
+{% endfor %}
+<div class="heading grades-heading">
+  <div>
+    <small class="kicker">EVALUACIÓN</small>
+    <h1>Calificaciones</h1>
+    <p>
+      {% if role == 'teacher' %}
+        Da seguimiento a las entregas y registra la evaluación de cada actividad.
+      {% else %}
+        Consulta tus resultados, el estado de revisión y las observaciones de tus docentes.
+      {% endif %}
+    </p>
+  </div>
+</div>
+
+<section class="grades-overview" aria-label="Resumen de calificaciones">
+  {% if role == 'student' %}
+    <article class="grades-overview-card grades-average-card">
+      <span class="grades-overview-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-star"></use></svg></span>
+      <div><small>Promedio de calificaciones</small>
+        {% if summary.graded %}
+          <strong>{{ (summary.grade_sum / summary.graded)|round(1) }}<span>/10</span></strong>
+          <p>Con {{ summary.graded }} actividad(es) calificadas</p>
+        {% else %}
+          <strong>—</strong><p>Aún no hay calificaciones para promediar</p>
+        {% endif %}
+      </div>
+    </article>
+    <article class="grades-overview-card">
+      <span class="grades-overview-icon overview-blue"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clipboard"></use></svg></span>
+      <div><small>Actividades calificadas</small><strong>{{ summary.graded }}<span> / {{ summary.total }}</span></strong><p>Registros disponibles en tu cuenta</p></div>
+    </article>
+    <article class="grades-overview-card">
+      <span class="grades-overview-icon overview-green"><svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>
+      <div><small>Revisadas</small><strong>{{ summary.reviewed }}</strong><p>Evaluación confirmada por tu docente</p></div>
+    </article>
+  {% else %}
+    <article class="grades-overview-card">
+      <span class="grades-overview-icon overview-blue"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clipboard"></use></svg></span>
+      <div><small>Registros en esta vista</small><strong>{{ summary.total }}</strong><p>Actividades asignadas a alumnos</p></div>
+    </article>
+    <article class="grades-overview-card">
+      <span class="grades-overview-icon overview-green"><svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>
+      <div><small>Revisadas</small><strong>{{ summary.reviewed }}</strong><p>Con evaluación revisada</p></div>
+    </article>
+    <article class="grades-overview-card">
+      <span class="grades-overview-icon overview-gold"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg></span>
+      <div><small>Por atender</small><strong>{{ summary.pending + summary.submitted }}</strong><p>{{ summary.submitted }} entregada(s) · {{ summary.pending }} pendiente(s)</p></div>
+    </article>
+  {% endif %}
+</section>
+
+<section class="grades-section">
+  <div class="grades-section-heading">
+    <div><small class="kicker">{% if role == 'teacher' %}SEGUIMIENTO ACADÉMICO{% else %}TU AVANCE{% endif %}</small>
+      <h2>{% if role == 'teacher' %}Evaluaciones por actividad{% else %}Detalle de tus actividades{% endif %}</h2>
+    </div>
+    <span class="grades-count">{{ summary.total }} registro(s)</span>
+  </div>
+
+  {% if rows %}
+    <div class="grades-list">
+      {% for r in rows %}
+        <article class="grade-card">
+          <div class="grade-card-main">
+            <div class="grade-card-title">
+              <span class="grade-card-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span>
+              <div>
+                {% if role == 'teacher' %}<small class="grade-student">{{ r.full_name }} · {{ r.group_name }} · Lista {{ r.list_number }}</small>{% endif %}
+                <h3>{{ r.title }}</h3>
+                <p>{{ r.subject }}{% if r.partial %}<span aria-hidden="true"> · </span>{{ r.partial }}{% endif %}</p>
+              </div>
+            </div>
+            <div class="grade-card-result">
+              <span class="grade-status status-{{ 'reviewed' if r.status == 'Revisada' else 'submitted' if r.status == 'Entregada' else 'pending' }}">
+                <svg class="ui-icon" aria-hidden="true"><use href="{% if r.status == 'Revisada' %}#icon-check{% elif r.status == 'Entregada' %}#icon-clock{% else %}#icon-clock{% endif %}"></use></svg>
+                {{ r.status }}
+              </span>
+              {% if r.grade is not none %}
+                <strong class="grade-value{% if r.grade < 6 %} grade-low{% elif r.grade < 8 %} grade-mid{% else %} grade-high{% endif %}">{{ r.grade }}<small>/10</small></strong>
+              {% else %}
+                <strong class="grade-value grade-unscored">Sin calificar</strong>
+              {% endif %}
+            </div>
+          </div>
+          {% if r.grade is not none %}
+            <div class="grade-performance">
+              <div class="grade-performance-label"><span>Desempeño</span><b>{{ (r.grade / 10 * 100)|round|int }}%</b></div>
+              <div class="grade-bar" role="img" aria-label="Desempeño: {{ r.grade }} de 10">
+                <span class="{% if r.grade < 6 %}grade-bar-low{% elif r.grade < 8 %}grade-bar-mid{% else %}grade-bar-high{% endif %}" style="--grade: {{ (r.grade / 10 * 100)|round|int }}%"></span>
+              </div>
+            </div>
+          {% endif %}
+          <div class="grade-card-meta">
+            {% if r.due_date %}<span>Fecha límite: {{ r.due_date }}</span>{% endif %}
+            {% if r.submitted_at %}<span>Entrega registrada: {{ r.submitted_at }}</span>{% endif %}
+          </div>
+          {% if r.comments %}
+            <div class="grade-observation"><svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg><p><b>Observación del docente</b><span>{{ r.comments }}</span></p></div>
+          {% elif role == 'student' %}
+            <p class="grade-no-observation">Sin observaciones para esta actividad.</p>
+          {% endif %}
+          {% if role == 'teacher' %}
+            <details class="grade-edit">
+              <summary><svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>Editar evaluación</summary>
+              <form method="post" action="{{ url_for('update_grade', gid=r.grade_id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label>Calificación (0 a 10)
+                  <input type="number" min="0" max="10" step=".1" name="grade" value="{{ r.grade if r.grade is not none else '' }}">
+                </label>
+                <label>Estado
+                  <select name="status">
+                    <option {% if r.status == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                    <option {% if r.status == 'Entregada' %}selected{% endif %}>Entregada</option>
+                    <option {% if r.status == 'Revisada' %}selected{% endif %}>Revisada</option>
+                  </select>
+                </label>
+                <label class="grade-comment-field">Observaciones
+                  <input name="comments" value="{{ r.comments or '' }}">
+                </label>
+                <label>Fecha real de entrega
+                  <input type="date" name="submitted_at" value="{{ r.submitted_at or '' }}">
+                </label>
+                <button class="primary small" type="submit">Guardar cambios</button>
+              </form>
+            </details>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="panel grades-empty">
+      <span class="grades-empty-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clipboard"></use></svg></span>
+      <h3>Aún no hay calificaciones</h3>
+      <p>{% if role == 'teacher' %}Cuando existan actividades asignadas a alumnos, aparecerán aquí para darles seguimiento.{% else %}Cuando tus actividades tengan registros, podrás consultar aquí sus estados, calificaciones y observaciones.{% endif %}</p>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · EduControl{% endblock %}
+{% block content %}
+<section class="panel message-card">
+  <span class="message-card-icon" aria-hidden="true">!</span>
+  <small class="kicker">MENSAJE DEL PORTAL</small>
+  <h1>{{ title }}</h1>
+  <p>{{ message }}</p>
+  <a class="primary" href="{{ url_for('dashboard') }}">Volver al inicio →</a>
+</section>
+{% endblock %}

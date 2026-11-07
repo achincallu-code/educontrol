@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: educontrol-cecytem
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --workers 1 --threads 4 --timeout 120 "app:create_app()"
+    healthCheckPath: /healthz
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: INITIAL_TEACHER_PASSWORD
+        sync: false
