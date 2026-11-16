@@ -119,9 +119,20 @@
   flex: 0 0 220px;
 }
 
+.achievements-hero-mascot {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  width: 170px;
+  height: 178px;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
 .achievements-progress-orbit {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   top: 5px;
   left: 13px;
   width: 110px;

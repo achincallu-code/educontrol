@@ -265,6 +265,12 @@ canvas {
     background: transparent;
   }
 
+  .teacher-dashboard .hero > .teacher-hero-mascot {
+    width: clamp(82px, 25vw, 112px);
+    height: 132px;
+    flex: 0 0 clamp(82px, 25vw, 112px);
+  }
+
   .content .heading {
     align-items: flex-start;
     gap: 9px;
@@ -429,10 +435,15 @@ canvas {
     bottom: auto;
     width: 100%;
     height: auto;
-    min-height: 72px;
-    aspect-ratio: 2265 / 510;
+    min-height: 128px;
+    aspect-ratio: auto;
     flex: none;
     opacity: 1;
+  }
+
+  .content .achievements-hero .achievements-hero-mascot {
+    width: 118px;
+    height: 128px;
   }
 
   .content .achievements-hero .achievements-progress-orbit {

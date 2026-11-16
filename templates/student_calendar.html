@@ -15,6 +15,7 @@
     <div class="calendar-title">
       <span class="calendar-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg></span>
       <div><small class="kicker">AGENDA ACADÉMICA</small><h2>Actividades y fechas importantes</h2></div>
+      <img class="calendar-title-mascot" src="{{ url_for('static', filename='img/cecyto-calendario.png') }}" alt="" aria-hidden="true" width="325" height="378" decoding="async">
     </div>
     <div class="calendar-controls" data-calendar-controls {% if user_preferences.calendar_view == 'list' %}hidden{% endif %}>
       <button type="button" class="calendar-nav" data-calendar-prev aria-label="Mes anterior"><svg class="ui-icon calendar-arrow-left" aria-hidden="true"><use href="#icon-chevron"></use></svg></button>

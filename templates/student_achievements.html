@@ -27,6 +27,7 @@
     </div>
   </div>
   <div class="achievements-hero-art" aria-hidden="true">
+    <img class="achievements-hero-mascot" src="{{ url_for('static', filename='img/cecyto-logros.png') }}" alt="" width="285" height="378" decoding="async">
     <div class="achievements-progress-orbit" style="--achievement-progress: {{ achievement_progress.total }}%">
       <div><strong>{{ earned_count }}<small>/{{ achievements|length }}</small></strong><span>logros</span></div>
     </div>

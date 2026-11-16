@@ -60,18 +60,26 @@
   max-width: 720px;
 }
 
-.student-hero-mascot {
+.student-hero-mascot,
+.teacher-hero-mascot {
+  position: relative;
+  z-index: 1;
   display: block;
-  width: clamp(105px, 16vw, 170px);
-  height: 145px;
-  flex: 0 0 clamp(105px, 16vw, 170px);
-  border-radius: 18px;
-  object-fit: cover;
-  filter: drop-shadow(0 8px 12px rgba(24, 67, 39, .14));
+  flex: 0 0 auto;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: none;
+  animation: none;
 }
 
 .student-hero-mascot {
-  object-position: right center;
+  width: clamp(112px, 15vw, 165px);
+  height: 180px;
+}
+
+.teacher-hero-mascot {
+  width: clamp(125px, 17vw, 185px);
+  height: 195px;
 }
 
 .teacher-dashboard .hero h2,
@@ -202,9 +210,13 @@ html[data-appearance="dark"] .achievements-hero-copy {
   }
 
   .student-hero-mascot {
-    width: clamp(82px, 25vw, 125px);
-    height: 120px;
-    flex-basis: clamp(82px, 25vw, 125px);
+    width: clamp(90px, 24vw, 132px);
+    height: 142px;
+  }
+
+  .teacher-hero-mascot {
+    width: clamp(92px, 23vw, 138px);
+    height: 150px;
   }
 
   .student-hero-copy {

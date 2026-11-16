@@ -1348,3 +1348,44 @@ html[data-reduced-motion="true"] .auth-page *::after {
   scroll-behavior: auto !important;
   transition-duration: .01ms !important;
 }
+
+.auth-showcase-mascot {
+  position: absolute;
+  z-index: 0;
+  right: 18px;
+  bottom: 128px;
+  width: clamp(125px, 16vw, 185px);
+  max-height: 48%;
+  object-fit: contain;
+  object-position: center bottom;
+  pointer-events: none;
+}
+
+.auth-showcase-copy {
+  right: clamp(142px, 17vw, 195px);
+}
+
+@media (max-width: 760px) {
+  .auth-showcase-mascot {
+    right: 8px;
+    bottom: 8px;
+    width: clamp(92px, 25vw, 132px);
+    max-height: 62%;
+  }
+
+  .auth-showcase-copy {
+    right: clamp(104px, 25vw, 142px);
+  }
+}
+
+@media (max-width: 420px) {
+  .auth-showcase-mascot {
+    right: 6px;
+    width: 88px;
+  }
+
+  .auth-showcase-copy {
+    right: 98px;
+    left: 16px;
+  }
+}

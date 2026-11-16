@@ -18,6 +18,7 @@
     <h2>¡Tú puedes lograrlo!</h2>
     <p>Cecyto te acompaña en este parcial. Cada actividad cuenta para alcanzar tus metas. 💚</p>
   </div>
+    <img class="teacher-hero-mascot" src="{{ url_for('static', filename='img/cecyto-docente.png') }}" alt="" aria-hidden="true" width="288" height="390" decoding="async">
 </div>
   {% set group_max = (group_stats|map(attribute='students')|max) if group_stats else 1 %}
   {% set grade_max = (grade_distribution|map(attribute='total')|max) if grade_distribution else 1 %}
@@ -113,7 +114,7 @@
       <p>Revisa tus actividades, organiza tus entregas y celebra cada avance.</p>
       <a class="student-hero-link" href="{{ url_for('activities') }}">Ir a mis actividades <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
     </div>
-    <img class="student-hero-mascot" src="{{ url_for('static', filename='img/CECYTO_02.png') }}" alt="" aria-hidden="true">
+    <img class="student-hero-mascot" src="{{ url_for('static', filename='img/cecyto-alumno.png') }}" alt="" aria-hidden="true" width="296" height="384" decoding="async">
   </section>
 
 {% if 'student_stats' in dashboard_widgets %}

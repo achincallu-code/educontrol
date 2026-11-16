@@ -192,10 +192,26 @@
   font: 800 19px Manrope, sans-serif;
 }
 
-.activity-list-heading > span {
+.activity-list-heading-visual {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.activity-list-heading-visual img {
+  display: block;
+  width: 76px;
+  height: 68px;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+.activity-list-heading-visual > span {
   color: var(--muted);
   font-size: 9px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .activity-filter-bar {
@@ -550,6 +566,11 @@ html[data-appearance="dark"] .activity-grade b {
   .activity-edit-heading {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .activity-list-heading-visual img {
+    width: 62px;
+    height: 58px;
   }
 }
 

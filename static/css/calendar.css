@@ -28,6 +28,15 @@
   gap: 12px;
 }
 
+.calendar-title-mascot {
+  display: block;
+  width: 68px;
+  height: 78px;
+  flex: 0 0 68px;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
 .calendar-section-icon {
   width: 43px;
   height: 43px;
@@ -573,6 +582,12 @@
     flex-direction: column;
   }
 
+  .calendar-title-mascot {
+    width: 58px;
+    height: 66px;
+    flex-basis: 58px;
+  }
+
   .student-full-calendar .calendar-controls {
     width: 100%;
   }
@@ -591,6 +606,16 @@
 }
 
 @media (max-width: 520px) {
+  .calendar-title {
+    gap: 8px;
+  }
+
+  .calendar-title-mascot {
+    width: 48px;
+    height: 58px;
+    flex-basis: 48px;
+  }
+
   .calendar-page-heading {
     flex-direction: column;
   }

@@ -59,7 +59,10 @@
 <section class="activity-list-section">
   <header class="activity-list-heading">
     <div><small class="kicker">{% if role == 'teacher' %}SEGUIMIENTO ACADÉMICO{% else %}TU TRABAJO ESCOLAR{% endif %}</small><h2>{% if role == 'teacher' %}Actividades publicadas{% else %}Actividades asignadas{% endif %}</h2></div>
-    <span>{{ activities|length }} resultado(s)</span>
+    <div class="activity-list-heading-visual" aria-hidden="true">
+      <img src="{{ url_for('static', filename='img/cecyto-actividades.png') }}" alt="" width="431" height="373" loading="lazy" decoding="async">
+      <span>{{ activities|length }} resultado(s)</span>
+    </div>
   </header>
 
   <form method="get" action="{{ url_for('activities') }}" class="activity-filter-bar">
