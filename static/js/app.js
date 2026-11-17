@@ -40,17 +40,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const quickStudentSearch = document.querySelector("[data-quick-student-search]");
   const quickGroup = quickStudentSearch?.querySelector("[data-quick-group]");
+  const quickSemester = quickStudentSearch?.querySelector('select[name="quick_semester"]');
   const quickListNumber = quickStudentSearch?.querySelector("[data-quick-list-number]");
   let quickSearchTimer;
   const submitQuickStudentSearch = () => {
-    if (quickGroup?.value && quickListNumber?.value && quickListNumber.checkValidity()) {
+    if (quickGroup?.value && quickSemester?.value && quickListNumber?.value && quickListNumber.checkValidity()) {
       quickStudentSearch.requestSubmit();
     }
   };
   quickGroup?.addEventListener("change", submitQuickStudentSearch);
+  quickSemester?.addEventListener("change", submitQuickStudentSearch);
   quickListNumber?.addEventListener("input", () => {
     window.clearTimeout(quickSearchTimer);
-    if (quickGroup?.value && quickListNumber.value) {
+    if (quickGroup?.value && quickSemester?.value && quickListNumber.value) {
       quickSearchTimer = window.setTimeout(submitQuickStudentSearch, 350);
     }
   });

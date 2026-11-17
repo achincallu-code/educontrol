@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Editar actividad · EduControl{% endblock %}
 {% block content %}
-<div class="heading activity-edit-heading"><div><small class="kicker">ADMINISTRACIÓN</small><h1>Editar actividad</h1><p>Los registros revisados y las calificaciones existentes se conservan.</p></div><a class="secondary" href="{{ url_for('activities') }}">← Volver a actividades</a></div>
+<div class="heading activity-edit-heading"><div><small class="kicker">ADMINISTRACIÓN</small><h1>Editar actividad</h1><p>{% if activity.semester is none %}Esta actividad antigua no tiene semestre definido. Selecciona el correcto; los registros existentes se conservarán.{% else %}Los registros revisados y las calificaciones existentes se conservan.{% endif %}</p></div><a class="secondary" href="{{ url_for('activities') }}">← Volver a actividades</a></div>
 <section class="panel activity-create-panel edit-form-panel">
   <div class="activity-create-heading">
     <span class="activity-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span>
@@ -21,6 +21,13 @@
       <div class="activity-field">
         <label for="edit-activity-group">Grupo <span aria-hidden="true">*</span></label>
         <input id="edit-activity-group" name="group_name" list="available-groups" maxlength="20" required value="{{ activity.group_name }}">
+      </div>
+      <div class="activity-field">
+        <label for="edit-activity-semester">Semestre <span aria-hidden="true">*</span></label>
+        <select id="edit-activity-semester" name="semester" required>
+          <option value="">Selecciona semestre</option>
+          {% for option in semester_options %}<option value="{{ option.semester }}" {% if activity.semester == option.semester %}selected{% endif %}>{{ option.semester }}° semestre</option>{% endfor %}
+        </select>
       </div>
       <div class="activity-field">
         <label for="edit-activity-partial">Parcial <span aria-hidden="true">*</span></label>

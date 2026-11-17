@@ -14,7 +14,7 @@
 <section class="panel activity-create-panel">
   <div class="activity-create-heading">
     <span class="activity-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg></span>
-    <div><small class="kicker">NUEVA ASIGNACIÓN</small><h2>Publicar actividad</h2><p>Se asignará a los alumnos activos aprobados del grupo seleccionado.</p></div>
+    <div><small class="kicker">NUEVA ASIGNACIÓN</small><h2>Publicar actividad</h2><p>Se asignará solo a los alumnos activos aprobados del grupo y semestre seleccionados.</p></div>
   </div>
   <form method="post" class="activity-form activity-form-modern">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -30,6 +30,13 @@
       <div class="activity-field">
         <label for="activity-group">Grupo <span aria-hidden="true">*</span></label>
         <input id="activity-group" name="group_name" list="available-groups" maxlength="20" required placeholder="Selecciona o escribe el grupo">
+      </div>
+      <div class="activity-field">
+        <label for="activity-semester">Semestre <span aria-hidden="true">*</span></label>
+        <select id="activity-semester" name="semester" required>
+          <option value="">Selecciona semestre</option>
+          {% for option in semester_options %}<option value="{{ option.semester }}">{{ option.semester }}° semestre</option>{% endfor %}
+        </select>
       </div>
       <div class="activity-field">
         <label for="activity-partial">Parcial <span aria-hidden="true">*</span></label>
@@ -66,6 +73,20 @@
   </header>
 
   <form method="get" action="{{ url_for('activities') }}" class="activity-filter-bar">
+    {% if role == 'teacher' %}
+      <label for="activity-group-filter"><span>Grupo</span>
+        <select id="activity-group-filter" name="group">
+          <option value="">Todos</option>
+          {% for group in groups %}<option value="{{ group.group_name }}" {% if selected_group == group.group_name %}selected{% endif %}>{{ group.group_name }}</option>{% endfor %}
+        </select>
+      </label>
+      <label for="activity-semester-filter"><span>Semestre</span>
+        <select id="activity-semester-filter" name="semester">
+          <option value="">Todos</option>
+          {% for option in semester_options %}<option value="{{ option.semester }}" {% if selected_semester == option.semester|string %}selected{% endif %}>{{ option.semester }}°</option>{% endfor %}
+        </select>
+      </label>
+    {% endif %}
     <label for="activity-status-filter"><span>Estado</span>
       <select id="activity-status-filter" name="status">
         <option value="">Todos los estados</option>
@@ -90,7 +111,7 @@
       </select>
     </label>
     <button class="secondary" type="submit"><svg class="ui-icon" aria-hidden="true"><use href="#icon-search"></use></svg>Aplicar filtros</button>
-    {% if selected_status or selected_deadline %}<a class="activity-clear-filter" href="{{ url_for('activities') }}">Limpiar</a>{% endif %}
+    {% if selected_status or selected_deadline or selected_group or selected_semester %}<a class="activity-clear-filter" href="{{ url_for('activities') }}">Limpiar</a>{% endif %}
   </form>
 
   <div class="activity-card-grid">
@@ -120,7 +141,7 @@
           <p class="activity-card-description">{{ activity.description or 'Consulta las indicaciones con tu docente y revisa los detalles de esta actividad.' }}</p>
         </div>
         <div class="activity-card-meta">
-          <span><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>Grupo {{ activity.group_name }}</span>
+          <span><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>Grupo {{ activity.group_name }} · Semestre {{ activity.semester or 'sin asignar' }}{% if activity.semester %}°{% endif %}</span>
           {% if activity.due_date %}
             <span class="{% if is_overdue %}is-date-overdue{% endif %}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>Entrega {{ activity.due_date }}</span>
           {% else %}
@@ -130,7 +151,9 @@
         </div>
         {% if role == 'teacher' %}
           <div class="activity-assignment-summary">
-            {% if activity.assigned_count %}
+            {% if not activity.semester %}
+              <span>Esta actividad antigua no tiene semestre. Edítala y asígnala a la lista correcta.</span>
+            {% elif activity.assigned_count %}
               <span><b>{{ activity.assigned_count }}</b> alumno(s)</span>
               <span><b>{{ activity.pending_count }}</b> pendiente(s)</span>
               <span><b>{{ activity.submitted_count }}</b> entregada(s)</span>
@@ -155,7 +178,7 @@
         </div>
       </article>
     {% else %}
-      <div class="activity-empty-state"><span class="activity-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span><h3>No hay actividades para mostrar</h3><p>{% if selected_status or selected_deadline %}Prueba cambiando los filtros.{% elif role == 'teacher' %}Publica una nueva actividad para empezar.{% else %}Cuando se asignen actividades a tu grupo, aparecerán aquí.{% endif %}</p></div>
+      <div class="activity-empty-state"><span class="activity-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span><h3>No hay actividades para mostrar</h3><p>{% if selected_status or selected_deadline %}Prueba cambiando los filtros.{% elif role == 'teacher' and (selected_group or selected_semester) %}Para filtrar, selecciona juntos un grupo y un semestre.{% elif role == 'teacher' %}Publica una nueva actividad para empezar.{% else %}Cuando se asignen actividades a tu grupo y semestre, aparecerán aquí.{% endif %}</p></div>
     {% endfor %}
   </div>
 </section>

@@ -5,10 +5,32 @@
   <div>
     <small class="kicker">{% if is_teacher %}ORGANIZACIÓN ESCOLAR{% else %}ORGANIZA TUS ENTREGAS{% endif %}</small>
     <h1>{% if is_teacher %}Calendario escolar{% else %}Mi calendario escolar{% endif %}</h1>
-    <p>{% if is_teacher %}Consulta entregas, actividades y fechas importantes de los grupos.{% else %}Consulta las fechas de entrega y avisos para tu grupo {{ student.group_name }}.{% endif %}</p>
+    <p>{% if is_teacher %}Consulta entregas por grupo y semestre, además de las fechas importantes.{% else %}Consulta las fechas de entrega y avisos para tu grupo {{ student.group_name }}, semestre {{ student.semester or '—' }}°.{% endif %}</p>
   </div>
-  {% if not is_teacher %}<span class="pill calendar-group-pill"><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>Grupo {{ student.group_name }}</span>{% endif %}
+  {% if not is_teacher %}<span class="pill calendar-group-pill"><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg>Grupo {{ student.group_name }} · {{ student.semester or '—' }}° semestre</span>{% endif %}
 </div>
+
+{% if is_teacher %}
+<form class="panel activity-filter-bar" method="get" action="{{ url_for('student_calendar') }}" aria-label="Filtrar calendario por grupo y semestre">
+  <label for="calendar-group-filter"><span>Grupo</span>
+    <select id="calendar-group-filter" name="group">
+      <option value="">Todos</option>
+      {% for group in groups %}<option value="{{ group.group_name }}" {% if selected_group == group.group_name %}selected{% endif %}>{{ group.group_name }}</option>{% endfor %}
+    </select>
+  </label>
+  <label for="calendar-semester-filter"><span>Semestre</span>
+    <select id="calendar-semester-filter" name="semester">
+      <option value="">Todos</option>
+      {% for option in semester_options %}<option value="{{ option.semester }}" {% if selected_semester == option.semester|string %}selected{% endif %}>{{ option.semester }}°</option>{% endfor %}
+    </select>
+  </label>
+  <button class="secondary" type="submit"><svg class="ui-icon" aria-hidden="true"><use href="#icon-search"></use></svg>Filtrar fechas</button>
+  {% if selected_group or selected_semester %}<a class="activity-clear-filter" href="{{ url_for('student_calendar') }}">Ver todos</a>{% endif %}
+</form>
+{% endif %}
+{% if is_teacher and incomplete_cohort_filter %}
+  <p class="flash error" role="status">Para filtrar el calendario, selecciona juntos un grupo y un semestre.</p>
+{% endif %}
 
 <section class="panel calendar-panel student-full-calendar" aria-label="Calendario escolar interactivo">
   <div class="calendar-heading">
@@ -70,7 +92,7 @@
     <span class="calendar-section-icon calendar-manage-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg></span>
     <div class="calendar-manage-copy">
       <small class="kicker">COMUNICACIÓN ESCOLAR</small><h2 id="calendar-manage-title">Publicar fecha importante</h2>
-      <p>El aviso se guardará en notificaciones y aparecerá en el calendario.</p>
+      <p>El aviso se guardará en notificaciones y aparecerá en el calendario. Elige grupo y semestre, o deja ambos en “Todos”.</p>
     </div>
     <a class="secondary calendar-admin-link" href="{{ url_for('notifications') }}">Administrar notificaciones <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
   </div>
@@ -79,7 +101,8 @@
     <label>Título<input name="title" maxlength="160" required placeholder="Ej. Consejo técnico escolar"></label>
     <label>Descripción<input name="message" maxlength="1000" required placeholder="Información para los alumnos"></label>
     <label>Fecha<input type="date" name="event_date" required></label>
-    <label>Destinatarios<select name="group_name"><option value="">Todos los grupos</option>{% for group in groups %}<option value="{{ group.group_name }}">Grupo {{ group.group_name }}</option>{% endfor %}</select></label>
+    <label>Grupo<select name="group_name"><option value="">Todos</option>{% for group in groups %}<option value="{{ group.group_name }}">Grupo {{ group.group_name }}</option>{% endfor %}</select></label>
+    <label>Semestre<select name="semester"><option value="">Todos</option>{% for option in semester_options %}<option value="{{ option.semester }}">{{ option.semester }}° semestre</option>{% endfor %}</select></label>
     <button class="primary" type="submit"><svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg>Publicar fecha</button>
   </form>
 </section>

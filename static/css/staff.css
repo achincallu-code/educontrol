@@ -701,6 +701,142 @@ a.staff-overview-card:hover {
   font-weight: 500;
 }
 
+.teacher-dashboard > .heading {
+  margin-bottom: 20px;
+}
+
+.teacher-dashboard > .heading p {
+  max-width: 650px;
+  line-height: 1.6;
+}
+
+.teacher-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.teacher-workflow-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 1fr 18px;
+  align-items: center;
+  gap: 13px;
+  min-height: 112px;
+  padding: 18px;
+  border: 1px solid var(--shell-line);
+  border-radius: 17px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  transition: border-color .2s, transform .2s, box-shadow .2s;
+}
+
+.teacher-workflow-card:hover,
+.teacher-workflow-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--accent-border);
+  box-shadow: 0 12px 28px rgba(var(--accent-rgb), .12);
+}
+
+.teacher-workflow-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  color: var(--g);
+}
+
+.teacher-workflow-icon .ui-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.teacher-workflow-card b,
+.teacher-workflow-card small {
+  display: block;
+}
+
+.teacher-workflow-card b {
+  margin-bottom: 5px;
+  font: 800 14px Manrope, sans-serif;
+}
+
+.teacher-workflow-card small {
+  max-width: 390px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.teacher-workflow-arrow {
+  width: 17px;
+  height: 17px;
+  color: var(--g);
+}
+
+.teacher-workflow-count {
+  position: absolute;
+  top: 12px;
+  right: 38px;
+  min-width: 22px;
+  padding: 4px 6px;
+  border-radius: 20px;
+  background: var(--accent-soft);
+  color: var(--g);
+  text-align: center;
+  font-size: 10px;
+}
+
+.record-grade-edit {
+  position: relative;
+  margin-top: 5px;
+}
+
+.record-grade-edit summary {
+  list-style: none;
+  font-size: 8px;
+  white-space: nowrap;
+}
+
+.record-grade-edit summary::-webkit-details-marker {
+  display: none;
+}
+
+.record-grade-edit .record-grade-form {
+  position: static;
+  display: grid;
+  gap: 3px;
+  width: min(220px, 70vw);
+  margin: 5px auto;
+  padding: 8px;
+  box-shadow: none;
+  text-align: left;
+}
+
+.record-grade-edit .record-grade-form label {
+  margin: 2px 0;
+  font-size: 8px;
+}
+
+.record-grade-edit .record-grade-form input,
+.record-grade-edit .record-grade-form select {
+  width: 100%;
+  padding: 6px;
+  font-size: 9px;
+}
+
+.record-grade-edit .record-grade-form button {
+  justify-self: center;
+  margin-top: 3px;
+}
+
+body:has(.teacher-workflow-grid) .cecyto-assistant {
+  display: none;
+}
+
 @media (max-width: 1120px) {
   .staff-filter-form {
     grid-template-columns: minmax(180px, 1.3fr) repeat(2, minmax(115px, .7fr)) auto auto;
@@ -933,6 +1069,10 @@ a.staff-overview-card:hover {
 
   .quick-result > a {
     width: 100%;
+  }
+
+  .teacher-workflow-grid {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -8,7 +8,7 @@
 {% if is_teacher %}
 <section class="panel notification-admin-panel">
   <div class="calendar-manage-heading">
-    <div><small class="kicker">AVISO ESCOLAR</small><h3>Publicar fecha importante</h3><p>El aviso también se mostrará en el calendario escolar.</p></div>
+    <div><small class="kicker">AVISO ESCOLAR</small><h3>Publicar fecha importante</h3><p>El aviso también se mostrará en el calendario. Elige grupo y semestre, o déjalos ambos en “Todos”.</p></div>
   </div>
   <form method="post" class="calendar-event-form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -16,6 +16,7 @@
     <label>Mensaje<input name="message" maxlength="1000" required placeholder="Detalles para los destinatarios"></label>
     <label>Fecha<input type="date" name="event_date" required></label>
     <label>Grupo<select name="group_name"><option value="">Todos los grupos</option>{% for group in groups %}<option value="{{ group.group_name }}">Grupo {{ group.group_name }}</option>{% endfor %}</select></label>
+    <label>Semestre<select name="semester"><option value="">Todos</option>{% for semester in semester_options %}<option value="{{ semester.semester }}">{{ semester.semester }}° semestre</option>{% endfor %}</select></label>
     <button class="primary">Publicar aviso →</button>
   </form>
 </section>
@@ -41,7 +42,7 @@
           <p>{{ notification.message }}</p>
           <small>
             {% if notification.event_date %}Fecha: {{ notification.event_date }} · {% endif %}
-            {% if notification.target_name %}Alumno: {{ notification.target_name }} · {% elif notification.target_group %}Grupo {{ notification.target_group }} · {% else %}Todos los grupos · {% endif %}
+            {% if notification.target_name %}Alumno: {{ notification.target_name }} · {% elif notification.target_group %}Grupo {{ notification.target_group }} · Semestre {{ notification.target_semester or 'sin asignar' }}° · {% else %}Todos los grupos · {% endif %}
             <time>{{ notification.created_at }}</time>
           </small>
         </div>

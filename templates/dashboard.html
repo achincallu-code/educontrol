@@ -3,93 +3,45 @@
 {% block content %}
 {% if role == 'teacher' %}
 <div class="teacher-dashboard">
-<div class="heading">
-  <div>
-    <small class="kicker">TU ESPACIO ACADÉMICO</small>
-    <h1>¡Hola, {{ session.get('full_name') }}! 👋</h1>
-    <p>Qué gusto verte. Hoy es un buen día para avanzar.</p>
-  </div>
-  <span class="pill">🐾 CECyTEM · {{ 'Docente' if role == 'teacher' else 'Alumno' }}</span>
-</div>
-
-<div class="hero">
-  <div>
-    <small>MENSAJE DE CECYTO</small>
-    <h2>¡Tú puedes lograrlo!</h2>
-    <p>Cecyto te acompaña en este parcial. Cada actividad cuenta para alcanzar tus metas. 💚</p>
-  </div>
+  <header class="heading">
+    <div>
+      <small class="kicker">ESPACIO DOCENTE</small>
+      <h1>Hola, {{ session.get('full_name') }}</h1>
+      <p>Elige una sección para continuar. Alumnos y actividades se organizan por grupo y semestre.</p>
+    </div>
+    <span class="pill">CECyTEM · Docente</span>
+  </header>
+  <section class="hero">
+    <div>
+      <small>CECYTO TE ACOMPAÑA</small>
+      <h2>¡Listos para aprender!</h2>
+      <p>Organiza tus grupos, comparte actividades y acompaña el avance de tus alumnos.</p>
+    </div>
     <img class="teacher-hero-mascot" src="{{ url_for('static', filename='img/cecyto-docente.png') }}" alt="" aria-hidden="true" width="288" height="390" decoding="async">
-</div>
-  {% set group_max = (group_stats|map(attribute='students')|max) if group_stats else 1 %}
-  {% set grade_max = (grade_distribution|map(attribute='total')|max) if grade_distribution else 1 %}
-  {% if 'teacher_stats' in dashboard_widgets %}
-  <div class="stats teacher-stats">
-    <article><i><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg></i><small>Alumnos activos</small><b>{{ stats.total }}</b></article>
-    <article class="teacher-stat-pending"><i><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg></i><small>Solicitudes pendientes</small><b>{{ stats.pending }}</b>{% if stats.pending %}<a href="{{ url_for('pending') }}">Revisar solicitudes <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>{% endif %}</article>
-    <article><i><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></i><small>Actividades registradas</small><b>{{ stats.activities }}</b></article>
-    <article><i><svg class="ui-icon" aria-hidden="true"><use href="#icon-check"></use></svg></i><small>Actividades revisadas</small><b>{{ stats.assignment_reviewed }}</b></article>
-    <article><i><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg></i><small>Actividades pendientes</small><b>{{ stats.assignment_pending }}</b></article>
-    <article><i><svg class="ui-icon" aria-hidden="true"><use href="#icon-star"></use></svg></i><small>Promedio general</small><b>{{ stats.average }}</b></article>
-  </div>
-  {% endif %}
-  {% if 'teacher_quick' in dashboard_widgets or 'teacher_recent' in dashboard_widgets %}
-  <div class="grid{% if ('teacher_quick' in dashboard_widgets) != ('teacher_recent' in dashboard_widgets) %} dashboard-single-grid{% endif %}">
-    {% if 'teacher_quick' in dashboard_widgets %}
-    <section class="panel">
-      <h3>Accesos rápidos</h3>
-      <div class="quick">
-        <a href="{{ url_for('students') }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg><b>Directorio de alumnos</b><small>Buscar por nombre o lista</small></a>
-        <a href="{{ url_for('pending') }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg><b>Aprobar registros</b><small>Revisar solicitudes</small></a>
-        <a href="{{ url_for('activities') }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg><b>Crear actividad</b><small>Publicar tarea o práctica</small></a>
-        <a href="{{ url_for('grades') }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-star"></use></svg><b>Calificaciones</b><small>Evaluar alumnos</small></a>
-        <a href="{{ url_for('reports') }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg><b>Reportes</b><small>Desempeño por alumno y grupo</small></a>
-      </div>
-    </section>
-    {% endif %}
-    {% if 'teacher_recent' in dashboard_widgets %}
-    <section class="panel">
-      <h3>Actividad reciente</h3>
-      {% for a in recent %}
-        <div class="row"><b>{{ a.title }}</b><small>{{ a.group_name }} · {{ a.subject }}</small></div>
-      {% else %}
-        <p class="empty">Aún no hay actividades.</p>
-      {% endfor %}
-    </section>
-    {% endif %}
-  </div>
-  {% endif %}
-  {% if 'teacher_groups' in dashboard_widgets or 'teacher_grades' in dashboard_widgets %}
-  <div class="grid teacher-charts{% if ('teacher_groups' in dashboard_widgets) != ('teacher_grades' in dashboard_widgets) %} dashboard-single-grid{% endif %}">
-    {% if 'teacher_groups' in dashboard_widgets %}
-    <section class="panel">
-      <div class="panel-heading-row"><div><small class="kicker">MATRÍCULA</small><h3>Alumnos por grupo</h3></div><a href="{{ url_for('students') }}">Directorio →</a></div>
-      {% for group in group_stats %}
-        <div class="chart-row">
-          <a href="{{ url_for('students', group=group.group_name) }}">{{ group.group_name }}</a>
-          <div class="chart-track"><i style="--bar: {{ (group.students / group_max * 100)|round|int }}%"></i></div>
-          <b>{{ group.students }}<small>{% if group.inactive %} · {{ group.inactive }} inactivos{% endif %}</small></b>
-        </div>
-      {% else %}
-        <p class="empty">Aún no hay alumnos activos aprobados.</p>
-      {% endfor %}
-    </section>
-    {% endif %}
-    {% if 'teacher_grades' in dashboard_widgets %}
-    <section class="panel">
-      <div class="panel-heading-row"><div><small class="kicker">RENDIMIENTO</small><h3>Distribución de calificaciones</h3></div><a href="{{ url_for('grades') }}">Ver calificaciones →</a></div>
-      {% for band in grade_distribution %}
-        <div class="chart-row">
-          <span>{{ band.band }}</span>
-          <div class="chart-track grade-track"><i style="--bar: {{ (band.total / grade_max * 100)|round|int }}%"></i></div>
-          <b>{{ band.total }}</b>
-        </div>
-      {% else %}
-        <p class="empty">Las gráficas aparecerán cuando haya calificaciones registradas.</p>
-      {% endfor %}
-    </section>
-    {% endif %}
-  </div>
-  {% endif %}
+  </section>
+  <nav class="teacher-workflow-grid" aria-label="Accesos principales del docente">
+    <a class="teacher-workflow-card" href="{{ url_for('students') }}">
+      <span class="teacher-workflow-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg></span>
+      <span><b>Alumnos</b><small>Elige grupo, semestre y número de lista; abre el expediente para calificar.</small></span>
+      <svg class="ui-icon teacher-workflow-arrow" aria-hidden="true"><use href="#icon-chevron"></use></svg>
+    </a>
+    <a class="teacher-workflow-card" href="{{ url_for('activities') }}">
+      <span class="teacher-workflow-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span>
+      <span><b>Actividades</b><small>Publica asignaciones solo para un grupo y semestre.</small></span>
+      <svg class="ui-icon teacher-workflow-arrow" aria-hidden="true"><use href="#icon-chevron"></use></svg>
+    </a>
+    <a class="teacher-workflow-card" href="{{ url_for('pending') }}">
+      <span class="teacher-workflow-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg></span>
+      <span><b>Solicitudes</b><small>Confirma quién puede entrar al portal.</small></span>
+      {% if stats.pending %}<strong class="teacher-workflow-count">{{ stats.pending }}</strong>{% endif %}
+      <svg class="ui-icon teacher-workflow-arrow" aria-hidden="true"><use href="#icon-chevron"></use></svg>
+    </a>
+    <a class="teacher-workflow-card" href="{{ url_for('student_calendar') }}">
+      <span class="teacher-workflow-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg></span>
+      <span><b>Calendario y entregas</b><small>Consulta fechas y publica avisos escolares.</small></span>
+      <svg class="ui-icon teacher-workflow-arrow" aria-hidden="true"><use href="#icon-chevron"></use></svg>
+    </a>
+  </nav>
   </div>
 {% else %}
 <div class="student-dashboard">

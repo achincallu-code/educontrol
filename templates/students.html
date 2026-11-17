@@ -5,7 +5,7 @@
   <div>
     <small class="kicker">GESTIÓN ESCOLAR</small>
     <h1>Directorio de alumnos</h1>
-    <p>Administra grupos, cuentas y expedientes desde un solo lugar.</p>
+    <p>Elige primero el grupo y semestre para consultar a sus alumnos sin mezclar listas.</p>
   </div>
   <div class="staff-heading-actions">
     {% if directory_stats.pending %}
@@ -24,7 +24,7 @@
 <section class="staff-overview" aria-label="Resumen del alumnado">
   <article class="staff-overview-card">
     <span class="staff-overview-icon overview-green"><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg></span>
-    <div><small>Alumnos registrados</small><b>{{ directory_stats.total }}</b><span>En todos los grupos</span></div>
+    <div><small>Alumnos registrados</small><b>{{ directory_stats.total }}</b><span>En el plantel</span></div>
   </article>
   <article class="staff-overview-card">
     <span class="staff-overview-icon overview-blue"><svg class="ui-icon" aria-hidden="true"><use href="#icon-shield"></use></svg></span>
@@ -42,20 +42,14 @@
 
 <section class="staff-groups-section" aria-labelledby="student-groups-title">
   <div class="staff-section-heading">
-    <div><small class="kicker">ORGANIZACIÓN ESCOLAR</small><h2 id="student-groups-title">Grupos</h2></div>
+    <div><small class="kicker">ORGANIZACIÓN ESCOLAR</small><h2 id="student-groups-title">Grupos y semestres</h2></div>
     <span>{{ group_stats|length }} grupo(s)</span>
   </div>
   <div class="staff-group-grid">
-    <a class="staff-group-card{% if not selected_group %} is-selected{% endif %}" href="{{ url_for('students', q=q, semester=selected_semester, status=selected_status) }}" aria-pressed="{{ 'true' if not selected_group else 'false' }}">
-      <span class="staff-group-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg></span>
-      <span class="staff-group-name">Todos los grupos</span>
-      <span class="staff-group-count">{{ directory_stats.active }} <small>alumnos activos</small></span>
-      <svg class="ui-icon staff-group-arrow" aria-hidden="true"><use href="#icon-chevron"></use></svg>
-    </a>
     {% for group in group_stats %}
-      <a class="staff-group-card{% if selected_group == group.group_name %} is-selected{% endif %}" href="{{ url_for('students', group=group.group_name, q=q, semester=selected_semester, status=selected_status) }}" aria-pressed="{{ 'true' if selected_group == group.group_name else 'false' }}">
+      <a class="staff-group-card{% if selected_group == group.group_name and selected_semester == (group.semester|string if group.semester else 'none') %} is-selected{% endif %}" href="{{ url_for('students', group=group.group_name, semester=group.semester if group.semester else 'none', q=q, status=selected_status) }}" aria-pressed="{{ 'true' if selected_group == group.group_name and selected_semester == (group.semester|string if group.semester else 'none') else 'false' }}">
         <span class="staff-group-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-graduation"></use></svg></span>
-        <span class="staff-group-name">{{ group.group_name }}</span>
+        <span class="staff-group-name">{{ group.group_name }} · {% if group.semester %}{{ group.semester }}° semestre{% else %}Semestre sin definir{% endif %}</span>
         <span class="staff-group-count">{{ group.active_students }} <small>activos{% if group.inactive_students %} · {{ group.inactive_students }} inactivos{% endif %}</small></span>
         <svg class="ui-icon staff-group-arrow" aria-hidden="true"><use href="#icon-chevron"></use></svg>
       </a>
@@ -68,7 +62,7 @@
 <section class="panel staff-directory-panel" aria-labelledby="student-directory-title">
   <div class="staff-section-heading staff-directory-heading">
     <div><small class="kicker">DIRECTORIO</small><h2 id="student-directory-title">Alumnos</h2></div>
-    <span class="staff-result-count">{{ students|length }} resultado(s)</span>
+    <span class="staff-result-count">{{ students|length }} resultado(s){% if cohort_selected %} · Grupo {{ selected_group }}, semestre {{ selected_semester }}°{% endif %}</span>
   </div>
 
   <form class="staff-filter-form" method="get" action="{{ url_for('students') }}" data-student-directory-search>
@@ -79,15 +73,16 @@
     <label class="staff-filter-select" for="student-group">
       <span>Grupo</span>
       <select id="student-group" name="group">
-        <option value="">Todos</option>
+        <option value="">Selecciona un grupo</option>
         {% for group in groups %}<option value="{{ group.group_name }}" {% if selected_group == group.group_name %}selected{% endif %}>{{ group.group_name }}</option>{% endfor %}
       </select>
     </label>
     <label class="staff-filter-select" for="student-semester">
       <span>Semestre</span>
       <select id="student-semester" name="semester">
-        <option value="">Todos</option>
+        <option value="">Selecciona un semestre</option>
         {% for option in semester_options %}<option value="{{ option.semester }}" {% if selected_semester == option.semester|string %}selected{% endif %}>{{ option.semester }}° semestre</option>{% endfor %}
+        <option value="none" {% if selected_semester == 'none' %}selected{% endif %}>Sin semestre</option>
       </select>
     </label>
     <label class="staff-filter-select" for="student-status">
@@ -106,11 +101,17 @@
 
   <form class="staff-quick-lookup" method="get" action="{{ url_for('students') }}" data-quick-student-search>
     <span class="staff-quick-lookup-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-search"></use></svg></span>
-    <div class="staff-quick-lookup-copy"><b>Búsqueda exacta por lista</b><small>Elige grupo y número para abrir un expediente rápidamente.</small></div>
+    <div class="staff-quick-lookup-copy"><b>Búsqueda exacta por lista</b><small>Elige grupo y semestre para abrir el expediente correcto.</small></div>
     <label class="sr-only" for="quick-group">Grupo</label>
     <select id="quick-group" name="quick_group" required data-quick-group>
       <option value="">Grupo</option>
       {% for group in groups %}<option value="{{ group.group_name }}" {% if quick_group == group.group_name %}selected{% endif %}>{{ group.group_name }}</option>{% endfor %}
+    </select>
+    <label class="sr-only" for="quick-semester">Semestre</label>
+    <select id="quick-semester" name="quick_semester" required>
+      <option value="">Semestre</option>
+      {% for option in semester_options %}<option value="{{ option.semester }}" {% if quick_semester == option.semester|string %}selected{% endif %}>{{ option.semester }}°</option>{% endfor %}
+      <option value="none" {% if quick_semester == 'none' %}selected{% endif %}>Sin semestre</option>
     </select>
     <label class="sr-only" for="quick-list-number">Número de lista</label>
     <input id="quick-list-number" name="quick_list_number" type="number" min="1" max="9999" value="{{ quick_list_number }}" required placeholder="Núm. de lista" data-quick-list-number>
@@ -119,7 +120,7 @@
   {% if quick_student %}
     <div class="quick-result" role="status">
       <span class="staff-student-avatar">{{ quick_student.full_name[0]|upper }}</span>
-      <div><small>ALUMNO ENCONTRADO</small><b>{{ quick_student.full_name }}</b><span>Grupo {{ quick_student.group_name }} · Lista {{ quick_student.list_number }} · Semestre {{ quick_student.semester or '—' }}°</span></div>
+      <div><small>ALUMNO ENCONTRADO</small><b>{{ quick_student.full_name }}</b><span>Grupo {{ quick_student.group_name }} · Semestre {{ quick_student.semester or '—' }}° · Lista {{ quick_student.list_number }}</span></div>
       <a class="primary" href="{{ url_for('record', student_id=quick_student.id) }}">Abrir expediente <svg class="ui-icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></a>
     </div>
   {% elif quick_message %}
@@ -148,7 +149,7 @@
         </div>
       </article>
     {% else %}
-      <p class="empty staff-empty-results">No se encontraron alumnos con esos filtros.</p>
+      <p class="empty staff-empty-results">{% if not cohort_selected %}Selecciona una tarjeta de grupo y semestre para ver únicamente esa lista.{% else %}No se encontraron alumnos con esos filtros.{% endif %}</p>
     {% endfor %}
   </div>
 </section>

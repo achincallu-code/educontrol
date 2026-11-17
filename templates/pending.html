@@ -1,1 +1,67 @@
-{% extends "base.html" %}{% block title %}Solicitudes · EduControl{% endblock %}{% block content %}<div class="heading"><div><small class="kicker">CONTROL DE ACCESO</small><h1>Solicitudes de alumnos</h1><p>Aprueba las cuentas para permitir el acceso al portal.</p></div></div><section class="panel"><div class="tablebox"><table><thead><tr><th>Alumno</th><th>Grupo</th><th>Semestre</th><th>Núm. lista</th><th>Correo electrónico</th><th>Acciones</th></tr></thead><tbody>{% for s in students %}<tr><td><b>{{s.full_name}}</b></td><td>{{s.group_name}}</td><td>{{s.semester or '—'}}</td><td>{{s.list_number}}</td><td>{{s.email or s.username}}</td><td><div class="actions"><form method="post" action="{{url_for('approve',uid=s.id)}}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="primary small">Aprobar</button></form><form method="post" action="{{url_for('reject',uid=s.id)}}" onsubmit="return confirm('¿Eliminar esta solicitud?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="danger small">Rechazar</button></form></div></td></tr>{% else %}<tr><td colspan="6" class="empty">No hay solicitudes pendientes. ¡Todo al día! 🐯</td></tr>{% endfor %}</tbody></table></div></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Solicitudes · EduControl{% endblock %}
+{% block content %}
+<div class="heading">
+  <div>
+    <small class="kicker">CONTROL DE ACCESO</small>
+    <h1>Solicitudes de alumnos</h1>
+    <p>Selecciona grupo y semestre para revisar solicitudes de una sola lista.</p>
+  </div>
+</div>
+<section class="panel">
+  <form class="activity-filter-bar" method="get" action="{{ url_for('pending') }}">
+    <label for="pending-group"><span>Grupo</span>
+      <select id="pending-group" name="group">
+        <option value="">Selecciona un grupo</option>
+        {% for group in groups %}<option value="{{ group.group_name }}" {% if selected_group == group.group_name %}selected{% endif %}>{{ group.group_name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label for="pending-semester"><span>Semestre</span>
+      <select id="pending-semester" name="semester">
+        <option value="">Selecciona un semestre</option>
+        {% for option in semester_options %}<option value="{{ option.semester }}" {% if selected_semester == option.semester|string %}selected{% endif %}>{{ option.semester }}° semestre</option>{% endfor %}
+      </select>
+    </label>
+    <button class="secondary" type="submit">Ver solicitudes</button>
+  </form>
+</section>
+<section class="panel">
+  {% if selected_group and selected_semester %}
+    <h2>Grupo {{ selected_group }} · {{ selected_semester }}° semestre</h2>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>Alumno</th><th>Núm. lista</th><th>Correo electrónico</th><th>Acciones</th></tr></thead>
+        <tbody>
+          {% for student in students %}
+            <tr>
+              <td><b>{{ student.full_name }}</b></td>
+              <td>{{ student.list_number }}</td>
+              <td>{{ student.email or student.username }}</td>
+              <td>
+                <div class="actions">
+                  <form method="post" action="{{ url_for('approve', uid=student.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="group" value="{{ selected_group }}">
+                    <input type="hidden" name="semester" value="{{ selected_semester }}">
+                    <button class="primary small" type="submit">Aprobar</button>
+                  </form>
+                  <form method="post" action="{{ url_for('reject', uid=student.id) }}" onsubmit="return confirm('¿Eliminar esta solicitud?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="group" value="{{ selected_group }}">
+                    <input type="hidden" name="semester" value="{{ selected_semester }}">
+                    <button class="danger small" type="submit">Rechazar</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="4" class="empty">No hay solicitudes pendientes en esta lista.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="empty">Elige un grupo y semestre para ver sus solicitudes de ingreso.</p>
+  {% endif %}
+</section>
+{% endblock %}

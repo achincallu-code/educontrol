@@ -71,13 +71,12 @@
           {% if role == 'teacher' %}
             <a class="nav-link {% if request.endpoint in ('students', 'student_edit') %}is-active{% endif %}" href="{{ url_for('students') }}" {% if request.endpoint in ('students', 'student_edit') %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-users"></use></svg></span><span>Alumnos</span></a>
             <a class="nav-link {% if request.endpoint == 'pending' %}is-active{% endif %}" href="{{ url_for('pending') }}" {% if request.endpoint == 'pending' %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg></span><span>Solicitudes</span></a>
-            <a class="nav-link {% if request.endpoint == 'reports' %}is-active{% endif %}" href="{{ url_for('reports') }}" {% if request.endpoint == 'reports' %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-chart"></use></svg></span><span>Reportes</span></a>
           {% endif %}
           <a class="nav-link {% if request.endpoint in ('activities', 'activity_edit') %}is-active{% endif %}" href="{{ url_for('activities') }}" {% if request.endpoint in ('activities', 'activity_edit') %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span><span>Actividades</span></a>
-          <a class="nav-link {% if request.endpoint == 'grades' %}is-active{% endif %}" href="{{ url_for('grades') }}" {% if request.endpoint == 'grades' %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-star"></use></svg></span><span>Calificaciones</span></a>
           <a class="nav-link {% if request.endpoint == 'student_calendar' %}is-active{% endif %}" href="{{ url_for('student_calendar') }}" {% if request.endpoint == 'student_calendar' %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg></span><span>Calendario</span></a>
-          <a class="nav-link {% if request.endpoint == 'notifications' %}is-active{% endif %}" href="{{ url_for('notifications') }}" {% if request.endpoint == 'notifications' %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg></span><span>Notificaciones</span>{% if unread_notifications %}<span class="nav-count">{{ unread_notifications }}</span>{% endif %}</a>
           {% if role == 'student' %}
+            <a class="nav-link {% if request.endpoint == 'grades' %}is-active{% endif %}" href="{{ url_for('grades') }}" {% if request.endpoint == 'grades' %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-star"></use></svg></span><span>Calificaciones</span></a>
+            <a class="nav-link {% if request.endpoint == 'notifications' %}is-active{% endif %}" href="{{ url_for('notifications') }}" {% if request.endpoint == 'notifications' %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg></span><span>Notificaciones</span>{% if unread_notifications %}<span class="nav-count">{{ unread_notifications }}</span>{% endif %}</a>
             <a class="nav-link {% if request.endpoint == 'record' %}is-active{% endif %}" href="{{ url_for('record') }}" {% if request.endpoint == 'record' %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clipboard"></use></svg></span><span>Mi registro</span></a>
             <a class="nav-link {% if request.endpoint == 'student_achievements' %}is-active{% endif %}" href="{{ url_for('student_achievements') }}" {% if request.endpoint == 'student_achievements' %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-trophy"></use></svg></span><span>Logros</span></a>
           {% endif %}
@@ -89,7 +88,7 @@
           {% endif %}
           <small class="nav-caption">CUENTA</small>
           <a class="nav-link {% if request.endpoint == 'student_settings' %}is-active{% endif %}" href="{{ url_for('student_settings') }}" {% if request.endpoint == 'student_settings' %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg></span><span>Configuración</span></a>
-          <a class="nav-link {% if request.endpoint == 'profile' %}is-active{% endif %}" href="{{ url_for('profile') }}" {% if request.endpoint == 'profile' %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-user"></use></svg></span><span>Mi perfil</span></a>
+          {% if role == 'student' %}<a class="nav-link {% if request.endpoint == 'profile' %}is-active{% endif %}" href="{{ url_for('profile') }}" {% if request.endpoint == 'profile' %}aria-current="page"{% endif %}><span class="nav-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-user"></use></svg></span><span>Mi perfil</span></a>{% endif %}
         </nav>
         <section class="theme-picker" aria-labelledby="theme-picker-title" data-theme-picker>
           <h2 id="theme-picker-title"><svg class="ui-icon" aria-hidden="true"><use href="#icon-sparkles"></use></svg> Personaliza tu espacio</h2>
@@ -122,7 +121,7 @@
           </div>
           <div class="topbar-end">
             <span class="topbar-date"><span class="status-dot"></span>{{ 'Docente' if role == 'teacher' else 'Alumno' }}</span>
-            <a class="notification-bell" href="{{ url_for('notifications') }}" aria-label="Notificaciones{% if unread_notifications %}, {{ unread_notifications }} sin leer{% endif %}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg>{% if unread_notifications %}<span>{{ unread_notifications }}</span>{% endif %}</a>
+            {% if role == 'student' %}<a class="notification-bell" href="{{ url_for('notifications') }}" aria-label="Notificaciones{% if unread_notifications %}, {{ unread_notifications }} sin leer{% endif %}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg>{% if unread_notifications %}<span>{{ unread_notifications }}</span>{% endif %}</a>{% endif %}
             <a class="user-pill" href="{{ url_for('profile') }}" aria-label="Ver perfil de {{ session.get('full_name') }}">
               <span class="user-avatar">
                 {% if user_preferences.profile_avatar %}

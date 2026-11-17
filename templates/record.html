@@ -30,7 +30,7 @@
     </header>
     <div class="student-info">
       <div><small>NOMBRE DEL ALUMNO</small><b>{{ student.full_name }}</b></div>
-      <div><small>GRUPO</small><b>{{ student.group_name }}</b></div>
+      <div><small>GRUPO · SEMESTRE</small><b>{{ student.group_name }} · {{ student.semester or '—' }}°</b></div>
       <div><small>NÚM. LISTA</small><b>{{ student.list_number }}</b></div>
     </div>
     {% if role == 'teacher' and page.has_pending_evidence %}
@@ -66,7 +66,34 @@
                 <small class="block">{{ r.subject }} · {{ r.partial }}</small>
                 <small class="block">{{ r.description }}</small>
               </td>
-              <td>{{ r.grade if r.grade is not none else '—' }}</td>
+              <td>
+                <b>{{ r.grade if r.grade is not none else '—' }}</b>
+                {% if role == 'teacher' and r.grade_id %}
+                  <details class="record-grade-edit no-print">
+                    <summary>Calificar</summary>
+                    <form class="record-grade-form" method="post" action="{{ url_for('update_grade', gid=r.grade_id) }}">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <input type="hidden" name="return_to" value="record">
+                      <input type="hidden" name="student_id" value="{{ student.id }}">
+                      <label>Calificación (0 a 10)
+                        <input type="number" min="0" max="10" step=".1" name="grade" value="{{ r.grade if r.grade is not none else '' }}">
+                      </label>
+                      <label>Estado
+                        <select name="status">
+                          {% for status in ['Pendiente', 'Entregada', 'Revisada'] %}<option {% if r.status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}
+                        </select>
+                      </label>
+                      <label>Observaciones
+                        <input name="comments" maxlength="1000" value="{{ r.comments or '' }}">
+                      </label>
+                      <label>Fecha real de entrega
+                        <input type="date" name="submitted_at" value="{{ r.submitted_at or '' }}">
+                      </label>
+                      <button class="primary small" type="submit">Guardar</button>
+                    </form>
+                  </details>
+                {% endif %}
+              </td>
               <td>
                 {% if r.status == 'Revisada' %}
                   <span class="record-review-stamp" aria-label="Evidencia revisada">✓ Revisada</span>
@@ -116,7 +143,7 @@
     </header>
     <div class="student-info">
       <div><small>NOMBRE DEL ALUMNO</small><b>{{ student.full_name }}</b></div>
-      <div><small>GRUPO</small><b>{{ student.group_name }}</b></div>
+      <div><small>GRUPO · SEMESTRE</small><b>{{ student.group_name }} · {{ student.semester or '—' }}°</b></div>
       <div><small>NÚM. LISTA</small><b>{{ student.list_number }}</b></div>
     </div>
     <div class="tablebox">
