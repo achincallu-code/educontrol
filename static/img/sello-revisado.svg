@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img">
+  <defs>
+    <linearGradient id="handle" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#35a66b"/>
+      <stop offset="1" stop-color="#075b37"/>
+    </linearGradient>
+    <linearGradient id="base" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#238653"/>
+      <stop offset="1" stop-color="#0b5838"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="60" fill="#eff8ed" stroke="#d7ead8" stroke-width="2"/>
+  <ellipse cx="65" cy="108" rx="39" ry="7" fill="#1e653d" opacity=".12"/>
+  <path d="M48 18c0-7 7-12 16-12s16 5 16 12l-4 9H52l-4-9Z" fill="url(#handle)"/>
+  <path d="M54 26h20l5 34H49l5-34Z" fill="#137244"/>
+  <path d="M43 57h42c5 0 9 4 9 9v9H34v-9c0-5 4-9 9-9Z" fill="url(#base)"/>
+  <path d="M34 73h60v9H34z" fill="#06492f"/>
+  <rect x="26" y="91" width="76" height="19" rx="9.5" fill="#fff" stroke="#238653" stroke-width="2" transform="rotate(-5 64 100.5)"/>
+  <path d="m35 100 4 4 7-8" fill="none" stroke="#16804b" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" transform="rotate(-5 64 100.5)"/>
+  <text x="49" y="103" fill="#17613d" font-family="Arial, sans-serif" font-size="6" font-weight="700" letter-spacing=".3" transform="rotate(-5 49 103)">REVISADO</text>
+</svg>

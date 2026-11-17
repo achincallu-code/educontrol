@@ -1828,36 +1828,51 @@ def grades():
 @app.post("/calificacion/<int:gid>")
 @require("teacher")
 def update_grade(gid):
-    raw=request.form.get("grade","").strip(); status=request.form.get("status","Pendiente")
-    comments=request.form.get("comments","").strip()
-    submitted_at_raw = request.form.get("submitted_at", "").strip()
-    try:
-        value=float(raw) if raw else None
-        if value is not None and not 0<=value<=10: raise ValueError
-    except ValueError:
-        flash("La calificación debe estar entre 0 y 10.","error"); return redirect(url_for("grades"))
-    if status not in ["Pendiente","Entregada","Revisada"]:
-        flash("Selecciona un estado válido.", "error")
-        return redirect(url_for("grades"))
-    if submitted_at_raw and not _valid_iso_date(submitted_at_raw):
-        flash("La fecha real de entrega no es válida.", "error")
-        return redirect(url_for("grades"))
-    if submitted_at_raw and date.fromisoformat(submitted_at_raw) > date.today():
-        flash("La fecha real de entrega no puede ser futura.", "error")
-        return redirect(url_for("grades"))
-    if submitted_at_raw and status == "Pendiente":
-        flash("Registra una fecha real solo cuando la actividad esté entregada o revisada.", "error")
-        return redirect(url_for("grades"))
+    stamp_evidence = request.form.get("action") == "stamp"
+    if stamp_evidence:
+        status = "Revisada"
+        comments = ""
+        submitted_at_raw = ""
+        value = None
+    else:
+        raw=request.form.get("grade","").strip()
+        status=request.form.get("status","Pendiente")
+        comments=request.form.get("comments","").strip()
+        submitted_at_raw = request.form.get("submitted_at", "").strip()
+        try:
+            value=float(raw) if raw else None
+            if value is not None and not 0<=value<=10: raise ValueError
+        except ValueError:
+            flash("La calificación debe estar entre 0 y 10.","error"); return redirect(url_for("grades"))
+        if status not in ["Pendiente","Entregada","Revisada"]:
+            flash("Selecciona un estado válido.", "error")
+            return redirect(url_for("grades"))
+        if submitted_at_raw and not _valid_iso_date(submitted_at_raw):
+            flash("La fecha real de entrega no es válida.", "error")
+            return redirect(url_for("grades"))
+        if submitted_at_raw and date.fromisoformat(submitted_at_raw) > date.today():
+            flash("La fecha real de entrega no puede ser futura.", "error")
+            return redirect(url_for("grades"))
+        if submitted_at_raw and status == "Pendiente":
+            flash("Registra una fecha real solo cuando la actividad esté entregada o revisada.", "error")
+            return redirect(url_for("grades"))
     with connect() as c:
         previous = c.execute(
-            """SELECT g.student_id,g.activity_id,g.grade,g.status,a.title,a.group_name,a.due_date,
-                      u.full_name,u.active,u.approved
+            """SELECT g.student_id,g.activity_id,g.grade,g.status,g.comments,g.submitted_at,
+                      a.title,a.group_name,a.due_date,u.full_name,u.active,u.approved
                FROM grades g JOIN activities a ON a.id=g.activity_id
                JOIN users u ON u.id=g.student_id WHERE g.id=?""",
             (gid,),
         ).fetchone()
         if not previous:
             abort(404)
+        if stamp_evidence:
+            if previous["status"] == "Revisada":
+                flash("Esta evidencia ya tiene el sello de revisada.", "success")
+                return redirect(url_for("record", student_id=previous["student_id"]))
+            value = previous["grade"]
+            comments = previous["comments"] or ""
+            submitted_at_raw = previous["submitted_at"] or date.today().isoformat()
         result = c.execute(
             """UPDATE grades SET grade=?,status=?,comments=?,submitted_at=?,
                reviewed_at=CASE WHEN ?='Revisada' THEN CURRENT_TIMESTAMP ELSE NULL END
@@ -1921,6 +1936,9 @@ def update_grade(gid):
         learning = _student_learning_data(previous["student_id"])
         with connect() as c:
             _sync_student_celebrations(c, previous["student_id"], learning[5])
+    if stamp_evidence:
+        flash("Evidencia marcada como revisada.", "success")
+        return redirect(url_for("record", student_id=previous["student_id"]))
     flash("Registro actualizado.","success"); return redirect(url_for("grades"))
 
 @app.route("/expediente")
@@ -1933,12 +1951,29 @@ def record():
         student=c.execute("SELECT * FROM users WHERE id=? AND role='student'",(uid,)).fetchone()
         if not student: abort(404)
         rows=c.execute(
-            """SELECT a.*,g.grade,g.status,g.comments FROM activities a
+            """SELECT a.*,g.id grade_id,g.grade,g.status,g.comments
+               FROM activities a
                LEFT JOIN grades g ON g.activity_id=a.id AND g.student_id=?
                WHERE a.group_name=? OR g.id IS NOT NULL ORDER BY a.partial,a.id""",
             (uid,student["group_name"]),
         ).fetchall()
-    return render_template("record.html",student=student,rows=rows)
+    page_size = 8
+    pages = []
+    for start in range(0, len(rows), page_size):
+        page_rows = rows[start:start + page_size]
+        pages.append({
+            "rows": page_rows,
+            "has_pending_evidence": any(
+                row["grade_id"] and row["status"] != "Revisada" for row in page_rows
+            ),
+        })
+    if not pages:
+        pages.append({"rows": [], "has_pending_evidence": False})
+    return render_template(
+        "record.html",
+        student=student,
+        pages=pages,
+    )
 
 @app.route("/exportar/alumnos.csv")
 @require("teacher")

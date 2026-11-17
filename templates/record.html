@@ -1,1 +1,212 @@
-{% extends "base.html" %}{% block title %}Registro académico · EduControl{% endblock %}{% block content %}<div class="heading no-print"><div><small class="kicker">DOCUMENTO ACADÉMICO</small><h1>Registro de tareas, trabajos y prácticas</h1><p>Consulta e imprime el expediente escolar.</p></div><button class="primary" onclick="window.print()">↓ Imprimir / Guardar PDF</button></div><section class="record"><header><b>CECyTEM <small>EDUCONTROL</small></b><h2>REGISTRO DE TAREAS, TRABAJOS Y PRÁCTICAS</h2><span>🐾</span></header><div class="student-info"><div><small>NOMBRE DEL ALUMNO</small><b>{{student.full_name}}</b></div><div><small>GRUPO</small><b>{{student.group_name}}</b></div><div><small>NÚM. LISTA</small><b>{{student.list_number}}</b></div></div><div class="tablebox"><table><thead><tr><th>NÚM.</th><th>DESCRIPCIÓN DE LA TAREA O PRÁCTICA</th><th>CALIFICACIÓN</th><th>FIRMA O SELLO</th></tr></thead><tbody>{% for r in rows %}<tr><td>{{loop.index}}</td><td><b>{{r.title}}</b><small class="block">{{r.subject}} · {{r.partial}}</small><small class="block">{{r.description}}</small></td><td>{{r.grade if r.grade is not none else '—'}}</td><td>{{'Revisada' if r.status=='Revisada' else '—'}}</td></tr>{% else %}<tr><td colspan="4" class="empty">Aún no hay actividades para mostrar.</td></tr>{% endfor %}{% for i in range(8-rows|length if rows|length<8 else 0) %}<tr><td>&nbsp;</td><td></td><td></td><td></td></tr>{% endfor %}</tbody></table></div><div class="sign"><span>Firma del alumno</span><span>Firma del docente</span></div><p class="record-foot">CECyTEM · Formando jóvenes con valores y tecnología.</p></section>{% endblock %}
+{% extends "base.html" %}
+{% block title %}Registro académico · EduControl{% endblock %}
+{% block content %}
+<div class="heading record-heading no-print">
+  <div>
+    <small class="kicker">DOCUMENTO ACADÉMICO</small>
+    <h1>Registro de tareas, trabajos y prácticas</h1>
+    <p>Consulta e imprime el expediente escolar.</p>
+  </div>
+  <div class="record-heading-actions">
+    <button
+      class="secondary"
+      type="button"
+      data-add-record-page
+      aria-controls="record-pages"
+      hidden
+    >＋ Agregar hoja en blanco</button>
+    <button class="primary" onclick="window.print()">↓ Imprimir / Guardar PDF</button>
+  </div>
+</div>
+<div class="record-pages" id="record-pages" data-record-pages>
+{% for page in pages %}
+  {% set page_rows = page.rows %}
+  {% set page_number = loop.index %}
+  <section class="record record-page">
+    <header>
+      <b>CECyTEM <small>EDUCONTROL</small></b>
+      <h2>REGISTRO DE TAREAS, TRABAJOS Y PRÁCTICAS</h2>
+      <span>🐾</span>
+    </header>
+    <div class="student-info">
+      <div><small>NOMBRE DEL ALUMNO</small><b>{{ student.full_name }}</b></div>
+      <div><small>GRUPO</small><b>{{ student.group_name }}</b></div>
+      <div><small>NÚM. LISTA</small><b>{{ student.list_number }}</b></div>
+    </div>
+    {% if role == 'teacher' and page.has_pending_evidence %}
+      <div class="record-stamp-dock record-page-stamp-source no-print">
+        <img
+          src="{{ url_for('static', filename='img/sello-revisado.svg') }}"
+          alt="Sello de revisado. Arrástralo a una casilla pendiente."
+          draggable="true"
+          data-review-stamp
+        >
+        <span>
+          <b>Arrastra el sello</b>
+          <small>Suéltalo en la casilla de la evidencia</small>
+        </span>
+      </div>
+    {% endif %}
+    <div class="tablebox">
+      <table>
+        <thead>
+          <tr>
+            <th>NÚM.</th>
+            <th>DESCRIPCIÓN DE LA TAREA O PRÁCTICA</th>
+            <th>CALIFICACIÓN</th>
+            <th>FIRMA O SELLO</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in page_rows %}
+            <tr>
+              <td>{{ (page_number - 1) * 8 + loop.index }}</td>
+              <td>
+                <b>{{ r.title }}</b>
+                <small class="block">{{ r.subject }} · {{ r.partial }}</small>
+                <small class="block">{{ r.description }}</small>
+              </td>
+              <td>{{ r.grade if r.grade is not none else '—' }}</td>
+              <td>
+                {% if r.status == 'Revisada' %}
+                  <span class="record-review-stamp" aria-label="Evidencia revisada">✓ Revisada</span>
+                {% elif role == 'teacher' and r.grade_id %}
+                  <div class="record-stamp-target" data-stamp-target>
+                    <span class="record-stamp-drop-hint">Suelta aquí</span>
+                    <form class="record-stamp-form no-print" method="post" action="{{ url_for('update_grade', gid=r.grade_id) }}">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <input type="hidden" name="action" value="stamp">
+                      <button class="secondary small record-stamp-button" type="submit" aria-label="Poner sello de revisado en {{ r.title }}">
+                        <span class="record-stamp-button-icon" aria-hidden="true">✓</span>
+                        <span class="record-stamp-button-label">Poner sello</span>
+                      </button>
+                    </form>
+                  </div>
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          {% if page_rows %}
+            {% for i in range(8 - page_rows|length) %}
+              <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="4" class="empty">Aún no hay actividades para mostrar.</td></tr>
+            {% for i in range(7) %}
+              <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+            {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+    <div class="sign"><span>Firma del alumno</span><span>Firma del docente</span></div>
+    <p class="record-foot">CECyTEM · Formando jóvenes con valores y tecnología.</p>
+    <p class="record-page-number" data-page-number>Hoja {{ page_number }} de {{ pages|length }}</p>
+  </section>
+{% endfor %}
+</div>
+<template id="record-empty-page-template">
+  <section class="record record-page record-page-added">
+    <header>
+      <b>CECyTEM <small>EDUCONTROL</small></b>
+      <h2>REGISTRO DE TAREAS, TRABAJOS Y PRÁCTICAS</h2>
+      <span>🐾</span>
+    </header>
+    <div class="student-info">
+      <div><small>NOMBRE DEL ALUMNO</small><b>{{ student.full_name }}</b></div>
+      <div><small>GRUPO</small><b>{{ student.group_name }}</b></div>
+      <div><small>NÚM. LISTA</small><b>{{ student.list_number }}</b></div>
+    </div>
+    <div class="tablebox">
+      <table>
+        <thead>
+          <tr>
+            <th>NÚM.</th>
+            <th>DESCRIPCIÓN DE LA TAREA O PRÁCTICA</th>
+            <th>CALIFICACIÓN</th>
+            <th>FIRMA O SELLO</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in range(8) %}
+            <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="sign"><span>Firma del alumno</span><span>Firma del docente</span></div>
+    <p class="record-foot">CECyTEM · Formando jóvenes con valores y tecnología.</p>
+    <p class="record-page-number" data-page-number></p>
+  </section>
+</template>
+<script>
+  const addRecordPageButton = document.querySelector("[data-add-record-page]");
+  const recordPages = document.querySelector("[data-record-pages]");
+  const emptyRecordPageTemplate = document.querySelector("#record-empty-page-template");
+  if (addRecordPageButton && recordPages && emptyRecordPageTemplate) {
+    addRecordPageButton.hidden = false;
+    addRecordPageButton.addEventListener("click", () => {
+      const newPage = emptyRecordPageTemplate.content.firstElementChild.cloneNode(true);
+      recordPages.appendChild(newPage);
+      const pages = recordPages.querySelectorAll(".record-page");
+      pages.forEach((page, index) => {
+        page.querySelector("[data-page-number]").textContent = `Hoja ${index + 1} de ${pages.length}`;
+      });
+      const reduceMotion = document.documentElement.dataset.reducedMotion === "true"
+        || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      newPage.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    });
+  }
+
+  document.querySelectorAll("[data-review-stamp]").forEach((reviewStamp) => {
+    reviewStamp.addEventListener("dragstart", (event) => {
+      event.dataTransfer.setData("text/plain", "educontrol-review-stamp");
+      event.dataTransfer.effectAllowed = "copy";
+      reviewStamp.classList.add("is-dragging");
+    });
+    reviewStamp.addEventListener("dragend", () => {
+      reviewStamp.classList.remove("is-dragging");
+    });
+  });
+
+  document.querySelectorAll("[data-stamp-target]").forEach((target) => {
+    target.addEventListener("dragover", (event) => {
+      if (!Array.from(event.dataTransfer.types).includes("text/plain")) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "copy";
+      target.classList.add("is-drop-ready");
+    });
+    target.addEventListener("dragleave", (event) => {
+      if (!target.contains(event.relatedTarget)) {
+        target.classList.remove("is-drop-ready");
+      }
+    });
+    target.addEventListener("drop", (event) => {
+      if (event.dataTransfer.getData("text/plain") !== "educontrol-review-stamp") return;
+      event.preventDefault();
+      target.classList.remove("is-drop-ready");
+      const form = target.querySelector(".record-stamp-form");
+      if (form) form.requestSubmit();
+    });
+  });
+
+  document.querySelectorAll(".record-stamp-form").forEach((form) => {
+    form.addEventListener("submit", (event) => {
+      if (form.dataset.stamping === "true") return;
+      const button = form.querySelector(".record-stamp-button");
+      if (!button) return;
+
+      event.preventDefault();
+      form.dataset.stamping = "true";
+      button.disabled = true;
+      button.classList.add("is-stamping");
+      form.closest("[data-stamp-target]")?.classList.add("is-stamping");
+      button.querySelector(".record-stamp-button-label").textContent = "Sellando…";
+      button.setAttribute("aria-label", "Sellando evidencia revisada");
+      window.setTimeout(() => form.requestSubmit(), 520);
+    });
+  });
+</script>
+{% endblock %}
