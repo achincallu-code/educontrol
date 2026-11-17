@@ -225,7 +225,7 @@ canvas {
   }
 
   .teacher-dashboard .hero {
-    min-height: 145px;
+    min-height: 190px;
     flex-direction: row;
     align-items: center;
     gap: 0;
@@ -260,15 +260,29 @@ canvas {
     min-width: 0;
     flex: 1 1 0;
     width: auto;
+    max-width: calc(100% - clamp(116px, 35vw, 146px));
     padding: 10px 8px 10px 2px;
     border-radius: 0;
     background: transparent;
   }
 
   .teacher-dashboard .hero > .teacher-hero-mascot {
-    width: clamp(82px, 25vw, 112px);
-    height: 132px;
-    flex: 0 0 clamp(82px, 25vw, 112px);
+    width: clamp(116px, 35vw, 146px);
+    height: auto;
+    max-height: 190px;
+    flex: 0 0 clamp(116px, 35vw, 146px);
+  }
+
+  .content .student-hero > .student-hero-mascot {
+    width: clamp(116px, 35vw, 146px);
+    height: auto;
+    max-height: 190px;
+    flex: 0 0 clamp(116px, 35vw, 146px);
+  }
+
+  .content .student-hero-copy {
+    max-width: calc(100% - clamp(116px, 35vw, 146px));
+    min-width: 0;
   }
 
   .content .heading {
@@ -358,6 +372,23 @@ canvas {
 
   .content .record table {
     min-width: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .teacher-dashboard .hero > div {
+    max-width: calc(100% - clamp(108px, 34vw, 126px));
+  }
+
+  .teacher-dashboard .hero > .teacher-hero-mascot,
+  .content .student-hero > .student-hero-mascot {
+    width: clamp(108px, 34vw, 126px);
+    max-height: 170px;
+    flex-basis: clamp(108px, 34vw, 126px);
+  }
+
+  .content .student-hero-copy {
+    max-width: calc(100% - clamp(108px, 34vw, 126px));
   }
 }
 
