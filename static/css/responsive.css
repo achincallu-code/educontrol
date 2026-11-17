@@ -225,7 +225,7 @@ canvas {
   }
 
   .teacher-dashboard .hero {
-    min-height: 190px;
+    min-height: 210px;
     flex-direction: row;
     align-items: center;
     gap: 0;
@@ -267,21 +267,21 @@ canvas {
   }
 
   .teacher-dashboard .hero > .teacher-hero-mascot {
-    width: clamp(116px, 35vw, 146px);
+    width: clamp(124px, 38vw, 154px);
     height: auto;
-    max-height: 190px;
-    flex: 0 0 clamp(116px, 35vw, 146px);
+    max-height: 205px;
+    flex: 0 0 clamp(124px, 38vw, 154px);
   }
 
   .content .student-hero > .student-hero-mascot {
-    width: clamp(116px, 35vw, 146px);
+    width: clamp(124px, 38vw, 154px);
     height: auto;
-    max-height: 190px;
-    flex: 0 0 clamp(116px, 35vw, 146px);
+    max-height: 205px;
+    flex: 0 0 clamp(124px, 38vw, 154px);
   }
 
   .content .student-hero-copy {
-    max-width: calc(100% - clamp(116px, 35vw, 146px));
+    max-width: calc(100% - clamp(124px, 38vw, 154px));
     min-width: 0;
   }
 
@@ -377,18 +377,18 @@ canvas {
 
 @media (max-width: 380px) {
   .teacher-dashboard .hero > div {
-    max-width: calc(100% - clamp(108px, 34vw, 126px));
+    max-width: calc(100% - clamp(116px, 36vw, 132px));
   }
 
   .teacher-dashboard .hero > .teacher-hero-mascot,
   .content .student-hero > .student-hero-mascot {
-    width: clamp(108px, 34vw, 126px);
-    max-height: 170px;
-    flex-basis: clamp(108px, 34vw, 126px);
+    width: clamp(116px, 36vw, 132px);
+    max-height: 178px;
+    flex-basis: clamp(116px, 36vw, 132px);
   }
 
   .content .student-hero-copy {
-    max-width: calc(100% - clamp(108px, 34vw, 126px));
+    max-width: calc(100% - clamp(116px, 36vw, 132px));
   }
 }
 
@@ -466,15 +466,15 @@ canvas {
     bottom: auto;
     width: 100%;
     height: auto;
-    min-height: 128px;
+    min-height: 148px;
     aspect-ratio: auto;
     flex: none;
     opacity: 1;
   }
 
   .content .achievements-hero .achievements-hero-mascot {
-    width: 118px;
-    height: 128px;
+    width: 132px;
+    height: 148px;
   }
 
   .content .achievements-hero .achievements-progress-orbit {

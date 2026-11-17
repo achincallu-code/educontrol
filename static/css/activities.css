@@ -237,9 +237,13 @@
 }
 
 .activity-filter-bar select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   min-height: 38px !important;
   margin: 0;
   font-size: 9px;
+  text-overflow: ellipsis;
 }
 
 .activity-filter-bar > button {
@@ -569,8 +573,8 @@ html[data-appearance="dark"] .activity-grade b {
   }
 
   .activity-list-heading-visual img {
-    width: 62px;
-    height: 58px;
+    width: 70px;
+    height: 64px;
   }
 }
 

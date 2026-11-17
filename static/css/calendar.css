@@ -583,9 +583,9 @@
   }
 
   .calendar-title-mascot {
-    width: 58px;
-    height: 66px;
-    flex-basis: 58px;
+    width: 64px;
+    height: 74px;
+    flex-basis: 64px;
   }
 
   .student-full-calendar .calendar-controls {
@@ -611,9 +611,9 @@
   }
 
   .calendar-title-mascot {
-    width: 48px;
-    height: 58px;
-    flex-basis: 48px;
+    width: 56px;
+    height: 66px;
+    flex-basis: 56px;
   }
 
   .calendar-page-heading {
