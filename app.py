@@ -1072,8 +1072,9 @@ def student_calendar():
         ]
     with connect() as c:
         groups = c.execute(
-            """SELECT DISTINCT group_name FROM users
+            """SELECT group_name FROM users
                WHERE role='student' AND approved=1 AND active=1
+               GROUP BY group_name
                ORDER BY LOWER(group_name)"""
         ).fetchall() if session["role"] == "teacher" else []
         semester_options = c.execute(
@@ -1197,8 +1198,9 @@ def notifications():
             (user_id, *parameters, *selected_types),
         ).fetchall()
         groups = c.execute(
-            """SELECT DISTINCT group_name FROM users
+            """SELECT group_name FROM users
                WHERE role='student' AND approved=1 AND active=1
+               GROUP BY group_name
                ORDER BY LOWER(group_name)"""
         ).fetchall() if role == "teacher" else []
         semester_options = c.execute(
@@ -1557,8 +1559,9 @@ def students():
                ORDER BY LOWER(group_name),semester"""
         ).fetchall()
         groups = c.execute(
-            """SELECT DISTINCT group_name FROM users
+            """SELECT group_name FROM users
                WHERE role='student' AND approved=1
+               GROUP BY group_name
                ORDER BY LOWER(group_name)"""
         ).fetchall()
         semester_options = c.execute(
@@ -1716,8 +1719,9 @@ def pending():
             parameters,
         ).fetchall()
         groups = c.execute(
-            """SELECT DISTINCT group_name FROM users WHERE role='student'
-               AND approved=0 AND active=1 ORDER BY LOWER(group_name)"""
+            """SELECT group_name FROM users WHERE role='student'
+               AND approved=0 AND active=1 GROUP BY group_name
+               ORDER BY LOWER(group_name)"""
         ).fetchall()
         semester_options = c.execute(
             """SELECT DISTINCT semester FROM users WHERE role='student'
@@ -2083,8 +2087,9 @@ def grades():
             else:
                 rows = []
         groups = c.execute(
-            """SELECT DISTINCT group_name FROM users WHERE role='student'
-               AND approved=1 AND active=1 ORDER BY LOWER(group_name)"""
+            """SELECT group_name FROM users WHERE role='student'
+               AND approved=1 AND active=1 GROUP BY group_name
+               ORDER BY LOWER(group_name)"""
         ).fetchall() if session["role"] == "teacher" else []
         semester_options = c.execute(
             """SELECT DISTINCT semester FROM users WHERE role='student'
@@ -2350,8 +2355,9 @@ def reports():
             c, selected_group, selected_semester, search
         )
         available_groups = c.execute(
-            """SELECT DISTINCT group_name FROM users
+            """SELECT group_name FROM users
                WHERE role='student' AND approved=1 AND active=1
+               GROUP BY group_name
                ORDER BY LOWER(group_name)"""
         ).fetchall()
         semester_options = c.execute(
