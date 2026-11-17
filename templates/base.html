@@ -124,7 +124,7 @@
             {% if role == 'student' %}<a class="notification-bell" href="{{ url_for('notifications') }}" aria-label="Notificaciones{% if unread_notifications %}, {{ unread_notifications }} sin leer{% endif %}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-bell"></use></svg>{% if unread_notifications %}<span>{{ unread_notifications }}</span>{% endif %}</a>{% endif %}
             <a class="user-pill" href="{{ url_for('profile') }}" aria-label="Ver perfil de {{ session.get('full_name') }}">
               <span class="user-avatar">
-                {% if user_preferences.profile_avatar %}
+                {% if user_preferences.profile_avatar != initial_profile_avatar %}
                   <img src="{{ url_for('static', filename='img/' ~ user_preferences.profile_avatar) }}" alt="">
                 {% else %}
                   {{ session.get('full_name', 'U')[0]|upper }}

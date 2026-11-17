@@ -288,7 +288,7 @@
 
 .profile-card-identity h2 {
   margin: 5px 0 8px;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   color: var(--ink);
   font: 800 clamp(19px, 3vw, 25px)/1.2 Manrope, sans-serif;
 }
@@ -439,20 +439,37 @@
   }
 
   .profile-card-main {
+    display: grid;
+    grid-template-columns: 78px minmax(0, 1fr);
+    grid-template-areas:
+      "avatar identity"
+      "avatar action";
     align-items: center;
-    flex-wrap: wrap;
+    gap: 10px 14px;
     padding: 0 16px 16px;
   }
 
   .profile-avatar {
+    grid-area: avatar;
+    align-self: start;
     width: 78px;
     height: 78px;
     flex-basis: 78px;
     margin-top: -39px;
   }
 
+  .profile-card-identity {
+    grid-area: identity;
+  }
+
   .profile-edit-link {
-    margin-left: 94px;
+    grid-area: action;
+    justify-self: start;
+    margin: 0;
+  }
+
+  .profile-data.is-student > div:first-child {
+    grid-column: 1 / -1;
   }
 
   .profile-data {

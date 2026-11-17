@@ -21,6 +21,8 @@ app.config.update(
     PERMANENT_SESSION_LIFETIME=timedelta(days=30),
 )
 DB = os.path.join(os.path.dirname(__file__), "educ_control.db")
+DEFAULT_PROFILE_AVATAR = "01_CECYTO_pulgar_arriba.png"
+INITIAL_PROFILE_AVATAR = "initial"
 DEFAULT_USER_PREFERENCES = {
     "theme": "green",
     "appearance": "system",
@@ -29,7 +31,7 @@ DEFAULT_USER_PREFERENCES = {
     "calendar_view": "month",
     "interface_size": "normal",
     "show_cecyto": 1,
-    "profile_avatar": "",
+    "profile_avatar": DEFAULT_PROFILE_AVATAR,
 }
 PROFILE_AVATARS = {
     f"{number:02d}": f"{number:02d}_CECYTO_{name}.png"
@@ -606,6 +608,9 @@ def shared():
                     "accesos favoritos",
                     default_values=(),
                 )
+            user_preferences["profile_avatar"] = (
+                user_preferences["profile_avatar"] or DEFAULT_PROFILE_AVATAR
+            )
             scope, parameters = _notification_scope(
                 role, user_id, session.get("group_name"), session.get("semester")
             )
@@ -629,6 +634,7 @@ def shared():
         "notification_options": NOTIFICATION_OPTIONS,
         "favorite_links": favorite_links,
         "favorite_options": FAVORITE_OPTIONS.get(role, {}),
+        "initial_profile_avatar": INITIAL_PROFILE_AVATAR,
         "csrf_token": csrf_token,
     }
 
@@ -1343,6 +1349,10 @@ def student_settings():
                 default_values=(),
             )
 
+        preferences["profile_avatar"] = (
+            preferences["profile_avatar"] or DEFAULT_PROFILE_AVATAR
+        )
+
         if request.method == "POST":
             allowed_values = {
                 "theme": {"green", "blue", "violet", "rose", "amber"},
@@ -1393,7 +1403,12 @@ def student_settings():
                     request.form.get("show_cecyto") == "on"
                 )
                 profile_avatar = request.form.get("profile_avatar", "")
-                if profile_avatar and profile_avatar not in PROFILE_AVATARS.values():
+                if not profile_avatar:
+                    profile_avatar = DEFAULT_PROFILE_AVATAR
+                if (
+                    profile_avatar != INITIAL_PROFILE_AVATAR
+                    and profile_avatar not in PROFILE_AVATARS.values()
+                ):
                     abort(400, description="La imagen de perfil seleccionada no es válida.")
                 preferences["profile_avatar"] = profile_avatar
             elif "reduce_motion" in request.form:
@@ -1453,6 +1468,7 @@ def student_settings():
         favorite_links=favorite_links,
         favorite_options=favorite_options,
         profile_avatars=PROFILE_AVATARS,
+        initial_profile_avatar=INITIAL_PROFILE_AVATAR,
     )
 
 

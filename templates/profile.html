@@ -14,7 +14,7 @@
   <div class="profile-card-cover" aria-hidden="true"></div>
   <div class="profile-card-main">
     <div class="profile-icon profile-avatar">
-      {% if user_preferences.profile_avatar %}
+      {% if user_preferences.profile_avatar != initial_profile_avatar %}
         <img src="{{ url_for('static', filename='img/' ~ user_preferences.profile_avatar) }}" alt="Avatar de {{ user.full_name }}">
       {% else %}
         <span>{{ user.full_name[0]|upper }}</span>
@@ -27,7 +27,7 @@
     </div>
     <a class="profile-edit-link" href="{{ url_for('student_settings') }}">Cambiar avatar</a>
   </div>
-  <div class="profile-data">
+  <div class="profile-data{% if user.role == 'student' %} is-student{% endif %}">
     <div><small>{{ 'Correo electrónico' if user.role == 'student' else 'Usuario' }}</small><b>{{ user.email or user.username }}</b></div>
     {% if user.role == 'student' %}
       <div><small>Grupo</small><b>{{ user.group_name }}</b></div>

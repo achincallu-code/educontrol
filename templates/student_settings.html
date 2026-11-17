@@ -19,8 +19,8 @@
     <div class="settings-accordion-content">
     <fieldset class="profile-avatar-picker">
       <legend class="sr-only">Selecciona tu avatar</legend>
-      <label class="profile-avatar-option{% if not preferences.profile_avatar %} is-selected{% endif %}">
-        <input type="radio" name="profile_avatar" value="" {% if not preferences.profile_avatar %}checked{% endif %}>
+      <label class="profile-avatar-option{% if preferences.profile_avatar == initial_profile_avatar %} is-selected{% endif %}">
+        <input type="radio" name="profile_avatar" value="{{ initial_profile_avatar }}" {% if preferences.profile_avatar == initial_profile_avatar %}checked{% endif %}>
         <span class="profile-avatar-preview profile-avatar-initial">{{ session.get('full_name', 'U')[0]|upper }}</span>
         <span class="profile-avatar-label">Inicial</span>
       </label>
