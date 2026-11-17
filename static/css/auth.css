@@ -384,7 +384,7 @@ html[data-appearance="system"] body.auth-page {
 }
 
 .auth-school-mark::after {
-  content: "Aprende, crece y avanza\A Cada paso cuenta";
+  content: "Aprende, crece y avanza\A Cumple y serás feliz";
   min-width: 0;
   overflow-wrap: anywhere;
   white-space: pre-line;
@@ -1488,5 +1488,84 @@ html[data-reduced-motion="true"] .auth-page *::after {
   .auth-showcase-copy {
     right: clamp(142px, 43vw, 168px);
     left: 16px;
+  }
+}
+
+@media (max-width: 760px) {
+  .auth-showcase-mascot {
+    bottom: 46px;
+  }
+
+  .auth-school-mark {
+    top: auto;
+    right: auto;
+    bottom: 9px;
+    left: 14px;
+    width: fit-content;
+    max-width: calc(50% - 18px);
+    gap: 6px;
+    padding: 5px 8px 5px 5px;
+    border-radius: 12px;
+    display: flex;
+  }
+
+  .auth-school-mark .ui-icon {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+    padding: 5px;
+    border-radius: 9px;
+  }
+
+  .auth-school-mark::before {
+    top: 4px;
+    right: 4px;
+    width: 4px;
+    height: 4px;
+  }
+
+  .auth-school-mark::after {
+    content: "Cumple y serás feliz";
+    font-size: 8px;
+    line-height: 1.25;
+    white-space: normal;
+  }
+
+  .auth-showcase-note {
+    top: auto;
+    right: 14px;
+    bottom: 9px;
+    left: auto;
+    max-width: calc(50% - 18px);
+    gap: 6px;
+    display: flex;
+  }
+
+  .auth-note-icon {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    border-radius: 9px;
+  }
+
+  .auth-note-icon .ui-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .auth-showcase-note strong {
+    font-size: 8px;
+  }
+
+  .auth-showcase-note small {
+    display: none;
+  }
+}
+
+@media (max-width: 350px) {
+  .auth-eyebrow {
+    gap: 5px;
+    font-size: 6.5px;
+    letter-spacing: .06em;
   }
 }
