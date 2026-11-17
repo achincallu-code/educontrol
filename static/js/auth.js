@@ -74,8 +74,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.title = mode === "register"
-      ? "Registro · EduControl"
-      : "Acceso · EduControl";
+      ? "Registro · CECY-CONTROL"
+      : "Acceso · CECY-CONTROL";
     updateStageHeight(currentHeight);
 
     if (focus) {

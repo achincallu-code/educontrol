@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="{{ '#121a16' if user_preferences.appearance == 'dark' else {'green': '#087443', 'blue': '#1767a6', 'violet': '#7045a2', 'rose': '#b04469', 'amber': '#ad5a1b'}.get(user_preferences.theme, '#087443') }}">
-  <title>{% block title %}EduControl CECyTEM{% endblock %}</title>
+  <title>{% block title %}CECY-CONTROL · CECyTEM{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
@@ -59,9 +59,9 @@
       <button class="sidebar-scrim" type="button" data-sidebar-close aria-label="Cerrar menú"></button>
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-          <a class="brand" href="{{ url_for('dashboard') }}" aria-label="CECyTEM EduControl, inicio">
+          <a class="brand" href="{{ url_for('dashboard') }}" aria-label="CECY-CONTROL CECyTEM, inicio">
             <span class="brand-mark"><img src="{{ url_for('static', filename='img/logocecytem.jpeg') }}" alt=""></span>
-            <span class="brand-wordmark">EduControl<small>CECyTEM · PORTAL ESCOLAR</small></span>
+            <span class="brand-wordmark">CECY-CONTROL<small>CECyTEM · PORTAL ESCOLAR</small></span>
           </a>
         </div>
         <div class="sidebar-caption"><span class="status-dot"></span>PLATAFORMA ACADÉMICA</div>
@@ -211,7 +211,7 @@
       {% endif %}
         {% block content %}{% endblock %}
       </section>
-      <footer><span>CECyTEM · EduControl</span><span>Formando jóvenes con valores y tecnología <b>♥</b></span></footer>
+      <footer><span>CECyTEM · CECY-CONTROL</span><span>Formando jóvenes con valores y tecnología <b>♥</b></span></footer>
     </main>
   </div>
 </body>

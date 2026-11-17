@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Reportes · EduControl{% endblock %}
+{% block title %}Reportes · CECY-CONTROL{% endblock %}
 {% block content %}
 {% set summary = namespace(students=0, assignments=0, pending=0, reviewed=0) %}
 {% for group in groups %}
@@ -49,7 +49,7 @@
 <header class="report-print-header">
   <div class="report-institution-mark" aria-hidden="true">CE</div>
   <div>
-    <small class="kicker">CECyTEM · EDUCONTROL</small>
+    <small class="kicker">CECyTEM · CECY-CONTROL</small>
     <h2>Reporte de desempeño académico{% if selected_group and selected_semester %} · Grupo {{ selected_group }}, semestre {{ selected_semester }}°{% endif %}</h2>
     <p>Alumnos activos aprobados · Generado el {{ generated_on }}{% if q %} · Filtro: {{ q }}{% endif %}</p>
   </div>

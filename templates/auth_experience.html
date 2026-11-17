@@ -2,10 +2,10 @@
   <div class="auth-shell{% if auth_mode == 'register' %} is-register{% endif %}"
        data-auth-shell
        data-auth-mode="{{ auth_mode }}">
-    <aside class="auth-showcase" aria-label="Bienvenida de EduControl">
-      <a class="auth-brand" href="{{ url_for('login') }}" aria-label="CECyTEM EduControl">
+    <aside class="auth-showcase" aria-label="Bienvenida de CECY-CONTROL">
+      <a class="auth-brand" href="{{ url_for('login') }}" aria-label="CECY-CONTROL CECyTEM">
         <span class="auth-brand-mark"><img src="{{ url_for('static', filename='img/logocecytem.jpeg') }}" alt=""></span>
-        <span><strong>EduControl</strong><small>CECyTEM · PORTAL ESCOLAR</small></span>
+        <span><strong>CECY-CONTROL</strong><small>CECyTEM · PORTAL ESCOLAR</small></span>
       </a>
       <nav class="auth-top-switch" aria-label="Cambiar entre iniciar sesión y crear cuenta">
         <a class="auth-top-switch-link auth-top-switch-register"

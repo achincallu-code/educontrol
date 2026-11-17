@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Mi perfil · EduControl{% endblock %}
+{% block title %}Mi perfil · CECY-CONTROL{% endblock %}
 {% block content %}
 <header class="heading profile-page-heading">
   <div>
     <small class="kicker">CUENTA PERSONAL</small>
     <h1>Mi perfil</h1>
-    <p>Tu información escolar y los datos de acceso a EduControl.</p>
+    <p>Tu información escolar y los datos de acceso a CECY-CONTROL.</p>
   </div>
   <a class="secondary" href="{{ url_for('student_settings') }}">Personalizar mi cuenta →</a>
 </header>
@@ -21,7 +21,7 @@
       {% endif %}
     </div>
     <div class="profile-card-identity">
-      <small class="kicker">CECYTEM · EDUCONTROL</small>
+      <small class="kicker">CECyTEM · CECY-CONTROL</small>
       <h2>{{ user.full_name }}</h2>
       <span class="pill">{{ 'Docente' if user.role == 'teacher' else 'Alumno' }}</span>
     </div>

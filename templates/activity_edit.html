@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Editar actividad · EduControl{% endblock %}
+{% block title %}Editar actividad · CECY-CONTROL{% endblock %}
 {% block content %}
 <div class="heading activity-edit-heading"><div><small class="kicker">ADMINISTRACIÓN</small><h1>Editar actividad</h1><p>{% if activity.semester is none %}Esta actividad antigua no tiene semestre definido. Selecciona el correcto; los registros existentes se conservarán.{% else %}Los registros revisados y las calificaciones existentes se conservan.{% endif %}</p></div><a class="secondary" href="{{ url_for('activities') }}">← Volver a actividades</a></div>
 <section class="panel activity-create-panel edit-form-panel">

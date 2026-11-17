@@ -1,4 +1,4 @@
-# EduControl CECyTEM
+# CECY-CONTROL CECyTEM
 
 Portal escolar desarrollado con Flask. En local utiliza SQLite; en Render debe conectarse a PostgreSQL mediante `DATABASE_URL` (por ejemplo, una base de Neon). La base de datos se inicializa y migra de forma aditiva al arrancar la aplicación.
 
@@ -59,7 +59,7 @@ En una base existente no necesitas volver a configurarla. Sin `SECRET_KEY`, el m
    Revisa la lista cuidadosamente: no debe mostrar `.env`, `educ_control.db`, `.venv` ni secretos. Luego:
 
    ```powershell
-   git commit -m "Prepare EduControl for Render and Neon"
+   git commit -m "Prepare CECY-CONTROL for Render and Neon"
    git remote add origin https://github.com/TU-USUARIO/TU-REPOSITORIO.git
    git push -u origin main
    ```
