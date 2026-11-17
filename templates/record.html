@@ -8,17 +8,10 @@
     <p>Consulta e imprime el expediente escolar.</p>
   </div>
   <div class="record-heading-actions">
-    <button
-      class="secondary"
-      type="button"
-      data-add-record-page
-      aria-controls="record-pages"
-      hidden
-    >＋ Agregar hoja en blanco</button>
     <button class="primary" onclick="window.print()">↓ Imprimir / Guardar PDF</button>
   </div>
 </div>
-<div class="record-pages" id="record-pages" data-record-pages>
+<div class="record-pages">
 {% for page in pages %}
   {% set page_rows = page.rows %}
   {% set page_number = loop.index %}
@@ -139,59 +132,7 @@
   </section>
 {% endfor %}
 </div>
-<template id="record-empty-page-template">
-  <section class="record record-page record-page-added">
-    <header>
-      <b>CECyTEM <small>EDUCONTROL</small></b>
-      <h2>REGISTRO DE TAREAS, TRABAJOS Y PRÁCTICAS</h2>
-      <span>🐾</span>
-    </header>
-    <div class="student-info">
-      <div><small>NOMBRE DEL ALUMNO</small><b>{{ student.full_name }}</b></div>
-      <div><small>GRUPO · SEMESTRE</small><b>{{ student.group_name }} · {{ student.semester or '—' }}°</b></div>
-      <div><small>NÚM. LISTA</small><b>{{ student.list_number }}</b></div>
-    </div>
-    <div class="tablebox">
-      <table>
-        <thead>
-          <tr>
-            <th>NÚM.</th>
-            <th>DESCRIPCIÓN DE LA TAREA O PRÁCTICA</th>
-            <th>CALIFICACIÓN</th>
-            <th>FIRMA O SELLO</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for i in range(8) %}
-            <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    <div class="sign"><span>Firma del alumno</span><span>Firma del docente</span></div>
-    <p class="record-foot">CECyTEM · Formando jóvenes con valores y tecnología.</p>
-    <p class="record-page-number" data-page-number></p>
-  </section>
-</template>
 <script>
-  const addRecordPageButton = document.querySelector("[data-add-record-page]");
-  const recordPages = document.querySelector("[data-record-pages]");
-  const emptyRecordPageTemplate = document.querySelector("#record-empty-page-template");
-  if (addRecordPageButton && recordPages && emptyRecordPageTemplate) {
-    addRecordPageButton.hidden = false;
-    addRecordPageButton.addEventListener("click", () => {
-      const newPage = emptyRecordPageTemplate.content.firstElementChild.cloneNode(true);
-      recordPages.appendChild(newPage);
-      const pages = recordPages.querySelectorAll(".record-page");
-      pages.forEach((page, index) => {
-        page.querySelector("[data-page-number]").textContent = `Hoja ${index + 1} de ${pages.length}`;
-      });
-      const reduceMotion = document.documentElement.dataset.reducedMotion === "true"
-        || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      newPage.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
-    });
-  }
-
   document.querySelectorAll("[data-review-stamp]").forEach((reviewStamp) => {
     reviewStamp.addEventListener("dragstart", (event) => {
       event.dataTransfer.setData("text/plain", "educontrol-review-stamp");

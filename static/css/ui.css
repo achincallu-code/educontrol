@@ -1910,20 +1910,11 @@ details form {
   scroll-margin-top: 84px;
 }
 
-.record-page-added {
-  animation: record-page-added 420ms ease-out both;
-}
-
 .record-page-number {
   margin: 12px 0 0;
   color: #829188;
   font-size: 9px;
   text-align: right;
-}
-
-@keyframes record-page-added {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes record-drop-stamp {
