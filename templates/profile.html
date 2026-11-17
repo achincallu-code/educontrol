@@ -27,6 +27,12 @@
     </div>
     <a class="profile-edit-link" href="{{ url_for('student_settings') }}">Cambiar avatar</a>
   </div>
+  <div class="profile-data-heading">
+    <div>
+      <small>{{ 'INFORMACIÓN ACADÉMICA' if user.role == 'student' else 'INFORMACIÓN PERSONAL' }}</small>
+      <h3>{{ 'Datos escolares' if user.role == 'student' else 'Datos de la cuenta' }}</h3>
+    </div>
+  </div>
   <div class="profile-data{% if user.role == 'student' %} is-student{% endif %}">
     <div><small>{{ 'Correo electrónico' if user.role == 'student' else 'Usuario' }}</small><b>{{ user.email or user.username }}</b></div>
     {% if user.role == 'student' %}
@@ -36,6 +42,9 @@
     {% endif %}
     <div><small>Estado de cuenta</small><b><span class="profile-account-status{% if user.approved and user.active %} is-active{% endif %}">{{ 'Activa' if user.approved and user.active else 'Pendiente de aprobación' if not user.approved else 'Desactivada' }}</span></b></div>
   </div>
-  <p class="profile-help">Para actualizar tus datos oficiales o escolares, solicita apoyo al docente administrador.</p>
+  <p class="profile-help">
+    <span class="profile-help-icon" aria-hidden="true">i</span>
+    <span>Para actualizar tus datos oficiales o escolares, solicita apoyo al docente administrador.</span>
+  </p>
 </section>
 {% endblock %}
