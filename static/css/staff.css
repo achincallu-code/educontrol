@@ -233,10 +233,21 @@ a.staff-overview-card:hover {
   transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
+.record-stamp-button-image {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  transition: transform 180ms ease;
+}
+
 .record-stamp-button:hover:not(:disabled) {
   transform: translateY(-2px) rotate(-1deg);
   background: #e6f6ec;
   box-shadow: 0 4px 0 #c6e4d1;
+}
+
+.record-stamp-button:hover:not(:disabled) .record-stamp-button-image {
+  transform: rotate(-9deg) scale(1.08);
 }
 
 .record-stamp-button:active:not(:disabled) {
@@ -254,29 +265,12 @@ a.staff-overview-card:hover {
   opacity: 1;
 }
 
-.record-stamp-button-icon {
-  display: grid;
-  width: 20px;
-  height: 20px;
-  place-items: center;
-  border: 1px solid #acd4ba;
-  border-radius: 50%;
-  background: #dcf2e4;
-  color: #17613d;
-  font-size: 12px;
-  transition: transform 180ms ease;
-}
-
-.record-stamp-button:hover:not(:disabled) .record-stamp-button-icon {
-  transform: rotate(-14deg) scale(1.08);
-}
-
 .record-stamp-button.is-stamping {
   background: #e6f6ec;
   cursor: wait;
 }
 
-.record-stamp-button.is-stamping .record-stamp-button-icon {
+.record-stamp-button.is-stamping .record-stamp-button-image {
   animation: record-stamp-impact 520ms cubic-bezier(.2,.8,.25,1) both;
 }
 
@@ -796,13 +790,34 @@ a.staff-overview-card:hover {
 }
 
 .record-grade-edit summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 4px 8px;
+  border: 1px solid #cfe5d6;
+  border-radius: 999px;
+  background: #f1faf3;
+  color: #17613d;
+  cursor: pointer;
   list-style: none;
   font-size: 8px;
   white-space: nowrap;
+  transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
 }
 
 .record-grade-edit summary::-webkit-details-marker {
   display: none;
+}
+
+.record-grade-edit summary:hover {
+  transform: translateY(-1px);
+  border-color: #9dc9aa;
+  background: #e8f6ec;
+}
+
+.record-grade-edit[open] summary {
+  border-color: #9dc9aa;
+  background: #e8f6ec;
 }
 
 .record-grade-edit .record-grade-form {
@@ -814,6 +829,36 @@ a.staff-overview-card:hover {
   padding: 8px;
   box-shadow: none;
   text-align: left;
+}
+
+.record-grade-preview {
+  display: block;
+  padding: 5px 7px;
+  border-radius: 7px;
+  background: #f3f7f4;
+  color: #607367;
+  font-size: 8px;
+  line-height: 1.4;
+}
+
+.record-grade-preview[data-level="low"] {
+  background: #fff0ed;
+  color: #a63e36;
+}
+
+.record-grade-preview[data-level="mid"] {
+  background: #fff5df;
+  color: #8a6417;
+}
+
+.record-grade-preview[data-level="high"] {
+  background: #e8f5eb;
+  color: #17613d;
+}
+
+.record-grade-preview[data-level="invalid"] {
+  background: #fff0ed;
+  color: #a63e36;
 }
 
 .record-grade-edit .record-grade-form label {
@@ -831,6 +876,158 @@ a.staff-overview-card:hover {
 .record-grade-edit .record-grade-form button {
   justify-self: center;
   margin-top: 3px;
+}
+
+@media screen and (max-width: 650px) {
+  .record .tablebox {
+    overflow: visible;
+  }
+
+  .record table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .record thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+  }
+
+  .record tbody {
+    display: grid;
+    gap: 9px;
+  }
+
+  .record-activity-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: hidden;
+    border: 1px solid #dce7df;
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .record-activity-row td {
+    min-width: 0;
+    height: auto;
+    padding: 9px;
+    border: 0;
+    text-align: left !important;
+    overflow-wrap: anywhere;
+  }
+
+  .record-activity-row td::before {
+    display: block;
+    margin-bottom: 5px;
+    color: #84948a;
+    content: attr(data-label);
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+
+  .record-activity-row td:nth-child(1),
+  .record-activity-row td:nth-child(2) {
+    grid-column: 1 / -1;
+    border-bottom: 1px solid #e7eee9;
+  }
+
+  .record-activity-row td:nth-child(1) {
+    padding-bottom: 5px;
+  }
+
+  .record-activity-row td:nth-child(2) {
+    padding-top: 8px;
+  }
+
+  .record-activity-row td:nth-child(3) {
+    border-right: 1px solid #e7eee9;
+  }
+
+  .record-empty-row {
+    display: none;
+  }
+
+  .record-empty-message {
+    display: block;
+  }
+
+  .record-empty-message td {
+    display: block;
+    width: 100%;
+    border: 0;
+  }
+
+  .record-grade-edit[open] .record-grade-backdrop {
+    position: fixed;
+    z-index: 39;
+    display: block;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: rgba(15, 31, 22, .58);
+  }
+
+  .record-grade-edit .record-grade-form {
+    position: fixed;
+    z-index: 40;
+    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    left: 12px;
+    width: auto;
+    max-height: min(78vh, 590px);
+    overflow-y: auto;
+    margin: 0;
+    padding: 15px;
+    border: 1px solid #dce7df;
+    border-radius: 16px;
+    background: var(--shell-surface, #fff);
+    box-shadow: 0 16px 48px rgba(8, 41, 22, .24);
+  }
+
+  .record-grade-edit .record-grade-close {
+    display: inline-flex;
+    justify-self: end;
+    margin: 0 0 4px;
+    padding: 5px 9px;
+    border: 1px solid #dce7df;
+    border-radius: 999px;
+    background: #f3f7f4;
+    color: #17613d;
+    font-size: 9px;
+    font-weight: 800;
+  }
+
+  .record-grade-edit .record-grade-form label {
+    font-size: 9px;
+  }
+
+  .record-grade-edit .record-grade-form input,
+  .record-grade-edit .record-grade-form select {
+    min-height: 38px;
+    font-size: 12px;
+  }
+
+  .record-grade-edit .record-grade-form button[type="submit"] {
+    min-height: 40px;
+    justify-self: stretch;
+    font-size: 10px;
+  }
+}
+
+.record-grade-backdrop,
+.record-grade-close {
+  display: none;
 }
 
 body:has(.teacher-workflow-grid) .cecyto-assistant {
@@ -1081,8 +1278,9 @@ body:has(.teacher-workflow-grid) .cecyto-assistant {
   .staff-group-card,
   .staff-student-card,
   .record-stamp-button,
-  .record-stamp-button-icon,
-  .record-review-stamp {
+  .record-stamp-button-image,
+  .record-review-stamp,
+  .record-grade-edit summary {
     transition: none;
     animation: none;
   }

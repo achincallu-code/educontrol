@@ -2221,7 +2221,11 @@ def update_grade(gid):
     if stamp_evidence:
         flash("Evidencia marcada como revisada.", "success")
         return redirect(url_for("record", student_id=previous["student_id"]))
-    flash("Registro actualizado.","success"); return grade_redirect(previous["student_id"])
+    if value is not None:
+        flash("Calificación guardada. El alumno ya puede verla en su cuenta.", "success")
+    else:
+        flash("Registro actualizado.", "success")
+    return grade_redirect(previous["student_id"])
 
 @app.route("/expediente")
 @require()

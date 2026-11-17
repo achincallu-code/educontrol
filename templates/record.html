@@ -42,8 +42,8 @@
           data-review-stamp
         >
         <span>
-          <b>Arrastra el sello</b>
-          <small>Suéltalo en la casilla de la evidencia</small>
+          <b>Usa el sello de revisado</b>
+          <small>Arrástralo a una casilla o toca “Poner sello” en la actividad</small>
         </span>
       </div>
     {% endif %}
@@ -59,25 +59,30 @@
         </thead>
         <tbody>
           {% for r in page_rows %}
-            <tr>
-              <td>{{ (page_number - 1) * 8 + loop.index }}</td>
-              <td>
+            <tr class="record-activity-row">
+              <td data-label="Núm.">{{ (page_number - 1) * 8 + loop.index }}</td>
+              <td data-label="Actividad">
                 <b>{{ r.title }}</b>
                 <small class="block">{{ r.subject }} · {{ r.partial }}</small>
                 <small class="block">{{ r.description }}</small>
               </td>
-              <td>
+              <td data-label="Calificación">
                 <b>{{ r.grade if r.grade is not none else '—' }}</b>
                 {% if role == 'teacher' and r.grade_id %}
                   <details class="record-grade-edit no-print">
-                    <summary>Calificar</summary>
+                    <summary>{% if r.grade is not none %}Editar calificación{% else %}＋ Poner calificación{% endif %}</summary>
+                    <button class="record-grade-backdrop" type="button" data-close-grade aria-label="Cerrar formulario de calificación"></button>
                     <form class="record-grade-form" method="post" action="{{ url_for('update_grade', gid=r.grade_id) }}">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                       <input type="hidden" name="return_to" value="record">
                       <input type="hidden" name="student_id" value="{{ student.id }}">
+                      <button class="record-grade-close" type="button" data-close-grade>Cerrar</button>
                       <label>Calificación (0 a 10)
-                        <input type="number" min="0" max="10" step=".1" name="grade" value="{{ r.grade if r.grade is not none else '' }}">
+                        <input type="number" min="0" max="10" step=".1" name="grade" value="{{ r.grade if r.grade is not none else '' }}" data-grade-input>
                       </label>
+                      <output class="record-grade-preview" data-grade-preview aria-live="polite">
+                        {% if r.grade is not none %}{{ r.grade }}/10 · Se verá en Calificaciones del alumno{% else %}La calificación se verá en Calificaciones del alumno al guardar.{% endif %}
+                      </output>
                       <label>Estado
                         <select name="status">
                           {% for status in ['Pendiente', 'Entregada', 'Revisada'] %}<option {% if r.status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}
@@ -89,12 +94,12 @@
                       <label>Fecha real de entrega
                         <input type="date" name="submitted_at" value="{{ r.submitted_at or '' }}">
                       </label>
-                      <button class="primary small" type="submit">Guardar</button>
+                      <button class="primary small" type="submit">Guardar calificación</button>
                     </form>
                   </details>
                 {% endif %}
               </td>
-              <td>
+              <td data-label="Revisión">
                 {% if r.status == 'Revisada' %}
                   <span class="record-review-stamp" aria-label="Evidencia revisada">✓ Revisada</span>
                 {% elif role == 'teacher' and r.grade_id %}
@@ -104,7 +109,7 @@
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                       <input type="hidden" name="action" value="stamp">
                       <button class="secondary small record-stamp-button" type="submit" aria-label="Poner sello de revisado en {{ r.title }}">
-                        <span class="record-stamp-button-icon" aria-hidden="true">✓</span>
+                        <img class="record-stamp-button-image" src="{{ url_for('static', filename='img/sello-revisado.svg') }}" alt="" aria-hidden="true">
                         <span class="record-stamp-button-label">Poner sello</span>
                       </button>
                     </form>
@@ -117,12 +122,12 @@
           {% endfor %}
           {% if page_rows %}
             {% for i in range(8 - page_rows|length) %}
-              <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+              <tr class="record-empty-row"><td>&nbsp;</td><td></td><td></td><td></td></tr>
             {% endfor %}
           {% else %}
-            <tr><td colspan="4" class="empty">Aún no hay actividades para mostrar.</td></tr>
+            <tr class="record-empty-message"><td colspan="4" class="empty">Aún no hay actividades para mostrar.</td></tr>
             {% for i in range(7) %}
-              <tr><td>&nbsp;</td><td></td><td></td><td></td></tr>
+              <tr class="record-empty-row"><td>&nbsp;</td><td></td><td></td><td></td></tr>
             {% endfor %}
           {% endif %}
         </tbody>
@@ -233,6 +238,45 @@
       button.querySelector(".record-stamp-button-label").textContent = "Sellando…";
       button.setAttribute("aria-label", "Sellando evidencia revisada");
       window.setTimeout(() => form.requestSubmit(), 520);
+    });
+  });
+
+  document.querySelectorAll(".record-grade-form").forEach((form) => {
+    const gradeInput = form.querySelector("[data-grade-input]");
+    const preview = form.querySelector("[data-grade-preview]");
+    const saveButton = form.querySelector('button[type="submit"]');
+
+    if (gradeInput && preview) {
+      gradeInput.addEventListener("input", () => {
+        const rawGrade = gradeInput.value.trim();
+        if (!rawGrade) {
+          preview.textContent = "La calificación se verá en Calificaciones del alumno al guardar.";
+          preview.dataset.level = "empty";
+          return;
+        }
+
+        const grade = Number(rawGrade);
+        if (!Number.isFinite(grade) || grade < 0 || grade > 10) {
+          preview.textContent = "Ingresa una calificación entre 0 y 10.";
+          preview.dataset.level = "invalid";
+          return;
+        }
+
+        preview.textContent = `Vista previa: ${grade.toLocaleString("es-MX", { maximumFractionDigits: 1 })}/10 · Se verá en Calificaciones del alumno`;
+        preview.dataset.level = grade < 6 ? "low" : grade < 8 ? "mid" : "high";
+      });
+    }
+
+    form.addEventListener("submit", () => {
+      if (!saveButton) return;
+      saveButton.disabled = true;
+      saveButton.textContent = "Guardando…";
+    });
+  });
+
+  document.querySelectorAll("[data-close-grade]").forEach((button) => {
+    button.addEventListener("click", () => {
+      button.closest(".record-grade-edit")?.removeAttribute("open");
     });
   });
 </script>

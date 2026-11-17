@@ -353,11 +353,11 @@ canvas {
   }
 
   .content .record .tablebox {
-    overflow-x: auto;
+    overflow: visible;
   }
 
   .content .record table {
-    min-width: 510px;
+    min-width: 0;
   }
 }
 
