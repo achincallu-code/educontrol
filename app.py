@@ -1495,6 +1495,30 @@ def mark_celebrations_seen():
     return "", 204
 
 
+def _student_directory_return(source):
+    return_q = source.get("return_q", "").strip()
+    return_group = source.get("return_group", "").strip().upper()[:20]
+    return_semester = source.get("return_semester", "").strip()
+    if return_semester not in {"1", "2", "3", "4", "5", "6", "none"}:
+        return_semester = ""
+    return_status = source.get("return_status", "").strip()
+    if return_status not in {"active", "inactive"}:
+        return_status = ""
+    return {
+        "return_q": return_q,
+        "return_group": return_group,
+        "return_semester": return_semester,
+        "return_status": return_status,
+        "return_url": url_for(
+            "students",
+            q=return_q or None,
+            group=return_group or None,
+            semester=return_semester or None,
+            status=return_status or None,
+        ),
+    }
+
+
 @app.route("/alumnos")
 @require("teacher")
 def students():
@@ -1615,6 +1639,8 @@ def students():
 @app.route("/alumno/<int:uid>/editar", methods=["GET", "POST"])
 @require("teacher")
 def edit_student(uid):
+    return_source = request.form if request.method == "POST" else request.args
+    return_context = _student_directory_return(return_source)
     with connect() as c:
         student = c.execute(
             "SELECT * FROM users WHERE id=? AND role='student' AND approved=1",
@@ -1683,18 +1709,21 @@ def edit_student(uid):
                             [(uid, activity["id"]) for activity in activities_for_group],
                         )
                 flash("Datos del alumno actualizados.", "success")
-                return redirect(url_for("students"))
+                return redirect(return_context["return_url"])
     groups = []
     with connect() as c:
         groups = c.execute(
             "SELECT DISTINCT group_name FROM users WHERE role='student' AND approved=1 ORDER BY group_name"
         ).fetchall()
-    return render_template("student_edit.html", student=student, groups=groups)
+    return render_template(
+        "student_edit.html", student=student, groups=groups, **return_context
+    )
 
 
 @app.post("/alumno/<int:uid>/estado")
 @require("teacher")
 def toggle_student_active(uid):
+    return_context = _student_directory_return(request.form)
     with connect() as c:
         student = c.execute(
             "SELECT id,active FROM users WHERE id=? AND role='student' AND approved=1",
@@ -1708,7 +1737,7 @@ def toggle_student_active(uid):
         "Cuenta del alumno desactivada." if not active else "Cuenta del alumno reactivada.",
         "success",
     )
-    return redirect(url_for("students"))
+    return redirect(return_context["return_url"])
 
 
 @app.route("/pendientes")

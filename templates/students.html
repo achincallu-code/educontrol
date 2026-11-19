@@ -141,9 +141,14 @@
         <span class="staff-account-status {{ 'is-active' if student.active else 'is-inactive' }}"><i></i>{{ 'Activa' if student.active else 'Desactivada' }}</span>
         <div class="staff-student-actions">
           <a class="secondary small" href="{{ url_for('record', student_id=student.id) }}"><svg class="ui-icon" aria-hidden="true"><use href="#icon-clipboard"></use></svg>Expediente</a>
-          <a class="secondary small" href="{{ url_for('edit_student', uid=student.id) }}">Editar</a>
-          <form method="post" action="{{ url_for('toggle_student_active', uid=student.id) }}" data-confirm-message="{{ '¿Desactivar' if student.active else '¿Reactivar' }} la cuenta de {{ student.full_name }}?">
+          {% set return_url = url_for('students', q=q or None, group=selected_group or None, semester=selected_semester or None, status=selected_status or None) %}
+          <a class="secondary small" href="{{ url_for('edit_student', uid=student.id, return_q=q or None, return_group=selected_group or None, return_semester=selected_semester or None, return_status=selected_status or None) }}" data-scroll-restore-url="{{ return_url }}">Editar</a>
+          <form method="post" action="{{ url_for('toggle_student_active', uid=student.id) }}" data-scroll-restore-url="{{ return_url }}" data-confirm-message="{{ '¿Desactivar' if student.active else '¿Reactivar' }} la cuenta de {{ student.full_name }}?">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="return_q" value="{{ q }}">
+            <input type="hidden" name="return_group" value="{{ selected_group }}">
+            <input type="hidden" name="return_semester" value="{{ selected_semester }}">
+            <input type="hidden" name="return_status" value="{{ selected_status }}">
             <button class="{{ 'danger' if student.active else 'primary' }} small" type="submit">{{ 'Desactivar' if student.active else 'Reactivar' }}</button>
           </form>
         </div>

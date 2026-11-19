@@ -6,8 +6,12 @@
   <a class="secondary" href="{{ url_for('students') }}">← Volver al directorio</a>
 </div>
 <section class="panel edit-form-panel">
-  <form method="post" class="activity-form">
+  <form method="post" class="activity-form" data-scroll-restore-url="{{ return_url }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="return_q" value="{{ return_q }}">
+    <input type="hidden" name="return_group" value="{{ return_group }}">
+    <input type="hidden" name="return_semester" value="{{ return_semester }}">
+    <input type="hidden" name="return_status" value="{{ return_status }}">
     <div class="two">
       <div><label for="edit-first-name">Nombre(s)</label><input id="edit-first-name" name="first_name" maxlength="80" required value="{{ student.first_name or student.full_name }}"></div>
       <div><label for="edit-last-name">Apellidos</label><input id="edit-last-name" name="last_name" maxlength="100" required value="{{ student.last_name or '' }}"></div>
