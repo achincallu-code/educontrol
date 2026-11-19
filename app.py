@@ -1959,6 +1959,24 @@ def _valid_iso_date(value):
 @app.route("/actividad/<int:aid>/editar", methods=["GET", "POST"])
 @require("teacher")
 def edit_activity(aid):
+    return_source = request.form if request.method == "POST" else request.args
+    return_status = return_source.get("return_status", "").strip()
+    if return_status not in {"pending", "submitted", "reviewed", "unassigned"}:
+        return_status = ""
+    return_deadline = return_source.get("return_deadline", "").strip()
+    if return_deadline not in {"upcoming", "overdue", "undated"}:
+        return_deadline = ""
+    return_group = return_source.get("return_group", "").strip().upper()[:20]
+    return_semester = return_source.get("return_semester", "").strip()
+    if return_semester not in {"1", "2", "3", "4", "5", "6"}:
+        return_semester = ""
+    return_url = url_for(
+        "activities",
+        status=return_status or None,
+        deadline=return_deadline or None,
+        group=return_group or None,
+        semester=return_semester or None,
+    )
     with connect() as c:
         activity = c.execute("SELECT * FROM activities WHERE id=?", (aid,)).fetchone()
         if not activity:
@@ -2057,7 +2075,7 @@ def edit_activity(aid):
                         created_by=session["user_id"],
                     )
                 flash("Actividad actualizada. Las calificaciones existentes se conservaron.", "success")
-                return redirect(url_for("activities"))
+                return redirect(return_url)
         groups = c.execute(
             "SELECT DISTINCT group_name FROM users WHERE role='student' AND approved=1 AND active=1 ORDER BY group_name"
         ).fetchall()
@@ -2068,7 +2086,9 @@ def edit_activity(aid):
         ).fetchall()
     return render_template(
         "activity_edit.html", activity=activity, groups=groups,
-        semester_options=semester_options,
+        semester_options=semester_options, return_url=return_url,
+        return_status=return_status, return_deadline=return_deadline,
+        return_group=return_group, return_semester=return_semester,
     )
 
 @app.post("/actividad/<int:aid>/eliminar")

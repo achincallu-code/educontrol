@@ -3,24 +3,63 @@ document.addEventListener("DOMContentLoaded", () => {
   let savedScroll;
   try {
     savedScroll = JSON.parse(sessionStorage.getItem(scrollRestoreKey) || "null");
-    sessionStorage.removeItem(scrollRestoreKey);
   } catch (error) {
     console.error("No se pudo restaurar la posición de desplazamiento.", error);
   }
+  const isValidScroll = (value) => (
+    value
+    && Number.isFinite(value.y)
+    && value.y >= 0
+    && Number.isFinite(value.timestamp)
+    && Date.now() - value.timestamp < 15000
+  );
   if (
     savedScroll
-    && (savedScroll.path === "*" || savedScroll.path === window.location.pathname)
-    && Number.isFinite(savedScroll.y)
-    && savedScroll.y >= 0
-    && Number.isFinite(savedScroll.timestamp)
-    && Date.now() - savedScroll.timestamp < 15000
+    && !isValidScroll(savedScroll)
   ) {
+    sessionStorage.removeItem(scrollRestoreKey);
+    savedScroll = null;
+  }
+  if (savedScroll?.path === window.location.pathname) {
     const restoreScroll = () => {
-      window.requestAnimationFrame(() => window.scrollTo(0, savedScroll.y));
+      window.requestAnimationFrame(() => {
+        window.scrollTo(0, savedScroll.y);
+        sessionStorage.removeItem(scrollRestoreKey);
+      });
     };
     if (document.readyState === "complete") restoreScroll();
     else window.addEventListener("load", restoreScroll, { once: true });
+  } else if (savedScroll?.throughPath !== window.location.pathname) {
+    sessionStorage.removeItem(scrollRestoreKey);
   }
+
+  document.addEventListener("click", (event) => {
+    const link = event.target instanceof Element
+      ? event.target.closest("a[data-scroll-restore-url]")
+      : null;
+    if (
+      !(link instanceof HTMLAnchorElement)
+      || event.defaultPrevented
+      || event.button !== 0
+      || event.metaKey
+      || event.ctrlKey
+      || event.shiftKey
+      || event.altKey
+      || link.target
+    ) return;
+    const target = new URL(link.dataset.scrollRestoreUrl, window.location.href);
+    if (target.origin !== window.location.origin) return;
+    try {
+      sessionStorage.setItem(scrollRestoreKey, JSON.stringify({
+        path: target.pathname,
+        throughPath: link.pathname,
+        y: window.scrollY,
+        timestamp: Date.now()
+      }));
+    } catch (error) {
+      console.error("No se pudo guardar la posición de desplazamiento.", error);
+    }
+  });
 
   document.addEventListener("submit", (event) => {
     const form = event.target;
@@ -33,12 +72,25 @@ document.addEventListener("DOMContentLoaded", () => {
     if (action.origin !== window.location.origin) return;
     const method = form.method.toLowerCase();
     if (method === "post" && action.pathname === "/salir") return;
+    const target = method === "post" && form.dataset.scrollRestoreUrl
+      ? new URL(form.dataset.scrollRestoreUrl, window.location.href)
+      : action;
+    if (target.origin !== window.location.origin) return;
     try {
-      sessionStorage.setItem(scrollRestoreKey, JSON.stringify({
-        path: method === "get" ? action.pathname : "*",
-        y: window.scrollY,
-        timestamp: Date.now()
-      }));
+      const currentScroll = JSON.parse(sessionStorage.getItem(scrollRestoreKey) || "null");
+      const preservePriorPosition = (
+        method === "post"
+        && isValidScroll(currentScroll)
+        && currentScroll.path === target.pathname
+        && currentScroll.throughPath === window.location.pathname
+      );
+      if (!preservePriorPosition) {
+        sessionStorage.setItem(scrollRestoreKey, JSON.stringify({
+          path: target.pathname,
+          y: window.scrollY,
+          timestamp: Date.now()
+        }));
+      }
     } catch (error) {
       console.error("No se pudo guardar la posición de desplazamiento.", error);
     }

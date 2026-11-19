@@ -7,8 +7,12 @@
     <span class="activity-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span>
     <div><small class="kicker">DETALLES DE LA ASIGNACIÓN</small><h2>{{ activity.title }}</h2><p>Actualiza las indicaciones sin perder las calificaciones existentes.</p></div>
   </div>
-  <form method="post" class="activity-form activity-form-modern">
+  <form method="post" class="activity-form activity-form-modern" data-scroll-restore-url="{{ return_url }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="return_status" value="{{ return_status }}">
+    <input type="hidden" name="return_deadline" value="{{ return_deadline }}">
+    <input type="hidden" name="return_group" value="{{ return_group }}">
+    <input type="hidden" name="return_semester" value="{{ return_semester }}">
     <div class="activity-form-grid">
       <div class="activity-field">
         <label for="edit-activity-title">Nombre de la actividad <span aria-hidden="true">*</span></label>

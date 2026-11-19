@@ -167,7 +167,8 @@
         {% endif %}
         <div class="activity-card-actions">
           {% if role == 'teacher' %}
-            <a class="secondary small" href="{{ url_for('edit_activity', aid=activity.id) }}">Editar</a>
+            {% set return_url = url_for('activities', status=selected_status or None, deadline=selected_deadline or None, group=selected_group or None, semester=selected_semester or None) %}
+            <a class="secondary small" href="{{ url_for('edit_activity', aid=activity.id, return_status=selected_status or None, return_deadline=selected_deadline or None, return_group=selected_group or None, return_semester=selected_semester or None) }}" data-scroll-restore-url="{{ return_url }}">Editar</a>
             <form method="post" action="{{ url_for('delete_activity', aid=activity.id) }}" data-confirm-message="¿Eliminar actividad y sus registros?">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="danger small" type="submit">Eliminar</button>

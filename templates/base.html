@@ -24,7 +24,7 @@
   {% if request.endpoint in ('login', 'register') %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
   {% endif %}
-  <script defer src="{{ url_for('static', filename='js/app.js', v='20261118-post-scroll') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/app.js', v='20261118-scroll-return-context') }}"></script>
   {% if request.endpoint in ('login', 'register') %}
     <script defer src="{{ url_for('static', filename='js/auth.js') }}"></script>
   {% endif %}

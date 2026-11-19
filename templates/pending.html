@@ -39,13 +39,13 @@
               <td>{{ student.email or student.username }}</td>
               <td>
                 <div class="actions">
-                  <form method="post" action="{{ url_for('approve', uid=student.id) }}">
+                  <form method="post" action="{{ url_for('approve', uid=student.id) }}" data-scroll-restore-url="{{ url_for('pending', group=selected_group, semester=selected_semester) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="group" value="{{ selected_group }}">
                     <input type="hidden" name="semester" value="{{ selected_semester }}">
                     <button class="primary small" type="submit">Aprobar</button>
                   </form>
-                  <form method="post" action="{{ url_for('reject', uid=student.id) }}" onsubmit="return confirm('¿Eliminar esta solicitud?')">
+                  <form method="post" action="{{ url_for('reject', uid=student.id) }}" data-scroll-restore-url="{{ url_for('pending', group=selected_group, semester=selected_semester) }}" onsubmit="return confirm('¿Eliminar esta solicitud?')">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="group" value="{{ selected_group }}">
                     <input type="hidden" name="semester" value="{{ selected_semester }}">
