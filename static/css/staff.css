@@ -307,6 +307,14 @@ a.staff-overview-card:hover {
   margin-bottom: 15px;
 }
 
+.staff-directory-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .staff-result-count {
   padding: 6px 9px;
   border: 1px solid var(--accent-border);

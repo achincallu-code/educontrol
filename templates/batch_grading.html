@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Calificar a cinco alumnos · CECY-CONTROL{% endblock %}
+{% block content %}
+<header class="heading">
+  <div>
+    <small class="kicker">EVALUACIÓN GRUPAL</small>
+    <h1>Calificar a cinco alumnos</h1>
+    <p>Busca cinco números de lista, confirma sus nombres y califica la misma actividad en una sola pantalla.</p>
+  </div>
+  <a class="secondary" href="{{ url_for('students', group=group or None, semester=semester or None) }}">← Volver a alumnos</a>
+</header>
+
+<section class="panel batch-grade-panel">
+  <div class="batch-grade-heading">
+    <small class="kicker">1 · ELIGE LA LISTA Y LA ACTIVIDAD</small>
+    <p>Los cinco números deben ser distintos y pertenecer al mismo grupo y semestre.</p>
+  </div>
+  <form class="batch-grade-search" method="get" action="{{ url_for('batch_grading') }}">
+    <label>Grupo
+      <select name="group" required>
+        <option value="">Selecciona un grupo</option>
+        {% for option in groups %}<option value="{{ option.group_name }}" {% if group == option.group_name %}selected{% endif %}>{{ option.group_name }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Semestre
+      <select name="semester" required>
+        <option value="">Selecciona un semestre</option>
+        {% for option in semester_options %}<option value="{{ option.semester }}" {% if semester == option.semester|string %}selected{% endif %}>{{ option.semester }}° semestre</option>{% endfor %}
+      </select>
+    </label>
+    <label class="batch-grade-activity">Actividad
+      <select name="activity_id" required>
+        <option value="">Selecciona una actividad</option>
+        {% for activity in activities %}<option value="{{ activity.id }}" {% if activity_id == activity.id %}selected{% endif %}>{{ activity.title }} · {{ activity.subject }} · {{ activity.partial }}</option>{% endfor %}
+      </select>
+    </label>
+    <div class="batch-grade-number-grid">
+      {% for index in range(5) %}
+        <label>Núm. de lista {{ index + 1 }}
+          <input type="number" name="number_{{ index + 1 }}" min="1" max="9999" step="1" required value="{{ number_values[index] }}" inputmode="numeric">
+        </label>
+      {% endfor %}
+    </div>
+    <button class="primary" type="submit">Buscar a los cinco alumnos</button>
+  </form>
+</section>
+
+{% if errors %}
+  <div class="batch-grade-errors" role="alert">
+    {% for error in errors %}<p>{{ error }}</p>{% endfor %}
+  </div>
+{% endif %}
+
+{% if entries %}
+  <section class="panel batch-grade-panel">
+    <div class="batch-grade-heading">
+      <small class="kicker">2 · CONFIRMA Y CALIFICA</small>
+      <h2>{{ selected_activity.title }}</h2>
+      <p>Grupo {{ group }} · {{ semester }}° semestre · {{ selected_activity.subject }} · {{ selected_activity.partial }}</p>
+      <p>Los alumnos aparecen en el mismo orden en que ingresaste sus números. Elige el estado de cada evaluación antes de guardar.</p>
+    </div>
+    <form method="post" action="{{ url_for('batch_grading') }}" data-scroll-restore-url="{{ url_for('batch_grading', group=group, semester=semester, activity_id=activity_id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="group" value="{{ group }}">
+      <input type="hidden" name="semester" value="{{ semester }}">
+      <input type="hidden" name="activity_id" value="{{ activity_id }}">
+      <div class="batch-grade-entry-list">
+        {% for entry in entries %}
+          <article class="batch-grade-entry">
+            <header>
+              <span class="batch-grade-order">{{ loop.index }}</span>
+              <div>
+                <small>LLAMAR · NÚMERO DE LISTA {{ entry.number }}</small>
+                <h3>{{ entry.student.full_name }}</h3>
+              </div>
+            </header>
+            <input type="hidden" name="number_{{ loop.index }}" value="{{ entry.number }}">
+            <div class="batch-grade-entry-fields">
+              <label>Calificación (0 a 10)
+                <input type="number" name="grade_{{ loop.index }}" min="0" max="10" step=".1" required value="{{ entry.grade }}">
+              </label>
+              <label>Estado
+                <select name="status_{{ loop.index }}">
+                  {% for status in ['Pendiente', 'Entregada', 'Revisada'] %}<option value="{{ status }}" {% if entry.status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}
+                </select>
+              </label>
+              <label class="batch-grade-comments">Observación (opcional)
+                <textarea name="comments_{{ loop.index }}" rows="2" maxlength="1000">{{ entry.comments }}</textarea>
+              </label>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+      <div class="batch-grade-actions">
+        <small>Se guardará una calificación individual para cada alumno.</small>
+        <button class="primary" type="submit">Guardar las cinco calificaciones</button>
+      </div>
+    </form>
+  </section>
+{% endif %}
+{% endblock %}

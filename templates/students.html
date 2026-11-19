@@ -62,7 +62,12 @@
 <section class="panel staff-directory-panel" aria-labelledby="student-directory-title">
   <div class="staff-section-heading staff-directory-heading">
     <div><small class="kicker">DIRECTORIO</small><h2 id="student-directory-title">Alumnos</h2></div>
-    <span class="staff-result-count">{{ students|length }} resultado(s){% if cohort_selected %} · Grupo {{ selected_group }}, semestre {{ selected_semester }}°{% endif %}</span>
+    <div class="staff-directory-actions">
+      <span class="staff-result-count">{{ students|length }} resultado(s){% if cohort_selected %} · Grupo {{ selected_group }}, semestre {{ selected_semester }}°{% endif %}</span>
+      {% if cohort_selected and selected_semester != 'none' %}
+        <a class="secondary small" href="{{ url_for('batch_grading', group=selected_group, semester=selected_semester) }}">Calificar a cinco</a>
+      {% endif %}
+    </div>
   </div>
 
   <form class="staff-filter-form" method="get" action="{{ url_for('students') }}" data-student-directory-search>

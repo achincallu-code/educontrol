@@ -2168,6 +2168,69 @@ def grades():
         selected_semester=selected_semester,
     )
 
+
+def _persist_grade_update(c, gid, previous, value, status, comments, submitted_at_raw):
+    result = c.execute(
+        """UPDATE grades SET grade=?,status=?,comments=?,submitted_at=?,
+           reviewed_at=CASE WHEN ?='Revisada' THEN CURRENT_TIMESTAMP ELSE NULL END
+           WHERE id=?""",
+        (
+            value, status, comments,
+            submitted_at_raw if status in ("Entregada", "Revisada") else None,
+            status, gid,
+        ),
+    )
+    if result.rowcount == 0:
+        abort(404)
+    if previous["grade"] is not None and value is not None and value > previous["grade"]:
+        c.execute(
+            """INSERT INTO grade_improvements(student_id,activity_id,previous_grade,grade)
+               VALUES(?,?,?,?)""",
+            (previous["student_id"], previous["activity_id"], previous["grade"], value),
+        )
+    if value is not None and value != previous["grade"]:
+        _create_notification(
+            c,
+            event_type="grade",
+            title="Calificación registrada o actualizada",
+            message=f"{previous['full_name']} · {previous['title']} · nueva calificación: {value:g}/10.",
+            event_date=date.today().isoformat(),
+            target_student=previous["student_id"],
+            activity_id=previous["activity_id"],
+            created_by=session["user_id"],
+        )
+    if (
+        previous["status"] not in ("Entregada", "Revisada")
+        and status in ("Entregada", "Revisada")
+    ):
+        submitted_date = submitted_at_raw or date.today().isoformat()
+        c.execute(
+            """INSERT OR IGNORE INTO student_celebrations
+               (student_id,event_key,title,message) VALUES(?,?,?,?)""",
+            (
+                previous["student_id"],
+                f"activity-completed:{gid}",
+                "¡Actividad completada!",
+                f"El docente confirmó la entrega de «{previous['title']}».",
+            ),
+        )
+        _create_notification(
+            c,
+            event_type="completion",
+            title="Actividad completada",
+            message=f"{previous['full_name']}: el docente confirmó la entrega de «{previous['title']}».",
+            event_date=submitted_date,
+            target_student=previous["student_id"],
+            activity_id=previous["activity_id"],
+            created_by=session["user_id"],
+        )
+    if status in ("Entregada", "Revisada") and not submitted_at_raw:
+        c.execute(
+            "UPDATE grades SET submitted_at=? WHERE id=?",
+            (date.today().isoformat(), gid),
+        )
+
+
 @app.post("/calificacion/<int:gid>")
 @require("teacher")
 def update_grade(gid):
@@ -2222,65 +2285,9 @@ def update_grade(gid):
             value = previous["grade"]
             comments = previous["comments"] or ""
             submitted_at_raw = previous["submitted_at"] or date.today().isoformat()
-        result = c.execute(
-            """UPDATE grades SET grade=?,status=?,comments=?,submitted_at=?,
-               reviewed_at=CASE WHEN ?='Revisada' THEN CURRENT_TIMESTAMP ELSE NULL END
-               WHERE id=?""",
-            (
-                value, status, comments,
-                submitted_at_raw if status in ("Entregada", "Revisada") else None,
-                status, gid,
-            ),
+        _persist_grade_update(
+            c, gid, previous, value, status, comments, submitted_at_raw
         )
-        if result.rowcount == 0:
-            abort(404)
-        if previous["grade"] is not None and value is not None and value > previous["grade"]:
-            c.execute(
-                """INSERT INTO grade_improvements(student_id,activity_id,previous_grade,grade)
-                   VALUES(?,?,?,?)""",
-                (previous["student_id"], previous["activity_id"], previous["grade"], value),
-            )
-        if value is not None and value != previous["grade"]:
-            _create_notification(
-                c,
-                event_type="grade",
-                title="Calificación registrada o actualizada",
-                message=f"{previous['full_name']} · {previous['title']} · nueva calificación: {value:g}/10.",
-                event_date=date.today().isoformat(),
-                target_student=previous["student_id"],
-                activity_id=previous["activity_id"],
-                created_by=session["user_id"],
-            )
-        if (
-            previous["status"] not in ("Entregada", "Revisada")
-            and status in ("Entregada", "Revisada")
-        ):
-            submitted_date = submitted_at_raw or date.today().isoformat()
-            c.execute(
-                """INSERT OR IGNORE INTO student_celebrations
-                   (student_id,event_key,title,message) VALUES(?,?,?,?)""",
-                (
-                    previous["student_id"],
-                    f"activity-completed:{gid}",
-                    "¡Actividad completada!",
-                    f"El docente confirmó la entrega de «{previous['title']}».",
-                ),
-            )
-            _create_notification(
-                c,
-                event_type="completion",
-                title="Actividad completada",
-                message=f"{previous['full_name']}: el docente confirmó la entrega de «{previous['title']}».",
-                event_date=submitted_date,
-                target_student=previous["student_id"],
-                activity_id=previous["activity_id"],
-                created_by=session["user_id"],
-            )
-        if status in ("Entregada", "Revisada") and not submitted_at_raw:
-            c.execute(
-                "UPDATE grades SET submitted_at=? WHERE id=?",
-                (date.today().isoformat(), gid),
-            )
     if previous["active"] and previous["approved"]:
         learning = _student_learning_data(previous["student_id"])
         with connect() as c:
@@ -2293,6 +2300,246 @@ def update_grade(gid):
     else:
         flash("Registro actualizado.", "success")
     return grade_redirect(previous["student_id"])
+
+
+def _batch_grading_data(
+    group, semester, activity_id, number_values,
+    grade_values=None, status_values=None, comment_values=None,
+):
+    errors = []
+    activities = []
+    selected_activity = None
+    entries = []
+    valid_semester = semester in {"1", "2", "3", "4", "5", "6"}
+    number_values = (number_values + [""] * 5)[:5]
+
+    with connect() as c:
+        groups = c.execute(
+            """SELECT DISTINCT group_name FROM users WHERE role='student'
+               AND approved=1 ORDER BY LOWER(group_name)"""
+        ).fetchall()
+        semester_options = c.execute(
+            """SELECT DISTINCT semester FROM users WHERE role='student'
+               AND approved=1 AND semester IS NOT NULL ORDER BY semester"""
+        ).fetchall()
+        if group and valid_semester:
+            activities = c.execute(
+                """SELECT id,title,subject,partial FROM activities
+                   WHERE group_name=? AND semester=? ORDER BY id DESC""",
+                (group, int(semester)),
+            ).fetchall()
+        selected_activity = next(
+            (activity for activity in activities if activity["id"] == activity_id),
+            None,
+        )
+
+        lookup_requested = bool(activity_id or any(number_values))
+        if lookup_requested:
+            number_ints = []
+            if not group or not valid_semester:
+                errors.append("Selecciona un grupo y semestre válidos.")
+            if not selected_activity:
+                errors.append("Selecciona una actividad de ese grupo y semestre.")
+            if not all(value.isdigit() for value in number_values):
+                errors.append("Ingresa los cinco números de lista.")
+            else:
+                number_ints = [int(value) for value in number_values]
+                if any(number < 1 or number > 9999 for number in number_ints):
+                    errors.append("Los números de lista deben estar entre 1 y 9999.")
+                elif len(set(number_ints)) != 5:
+                    errors.append("Cada alumno debe tener un número de lista distinto.")
+
+            if not errors:
+                placeholders = ",".join("?" for _ in number_ints)
+                students = c.execute(
+                    f"""SELECT u.id,u.full_name,u.list_number,u.group_name,u.semester,
+                               u.active,u.approved,g.id grade_id,g.grade,g.status,g.comments
+                        FROM users u
+                        LEFT JOIN grades g ON g.student_id=u.id AND g.activity_id=?
+                        WHERE u.role='student' AND u.approved=1
+                          AND u.group_name=? AND u.semester=?
+                          AND u.list_number IN ({placeholders})""",
+                    (activity_id, group, int(semester), *number_ints),
+                ).fetchall()
+                students_by_number = {
+                    student["list_number"]: student for student in students
+                }
+                missing_numbers = [
+                    number for number in number_ints
+                    if number not in students_by_number
+                ]
+                if missing_numbers:
+                    errors.append(
+                        "No se encontró alumno aprobado en esa lista con número: "
+                        + ", ".join(str(number) for number in missing_numbers)
+                        + "."
+                    )
+                else:
+                    for index, number in enumerate(number_ints):
+                        student = students_by_number[number]
+                        current_grade = (
+                            student["grade"]
+                            if student["grade"] is not None else ""
+                        )
+                        if status_values is not None:
+                            entry_status = status_values[index]
+                        elif student["grade"] is not None:
+                            entry_status = student["status"] or "Revisada"
+                        else:
+                            entry_status = "Revisada"
+                        entries.append({
+                            "student": student,
+                            "number": number,
+                            "grade": (
+                                grade_values[index]
+                                if grade_values is not None
+                                else current_grade
+                            ),
+                            "status": entry_status,
+                            "comments": (
+                                comment_values[index]
+                                if comment_values is not None
+                                else student["comments"] or ""
+                            ),
+                        })
+
+    return {
+        "group": group,
+        "semester": semester,
+        "groups": groups,
+        "semester_options": semester_options,
+        "activities": activities,
+        "activity_id": activity_id,
+        "selected_activity": selected_activity,
+        "number_values": number_values,
+        "entries": entries,
+        "errors": errors,
+    }
+
+
+@app.route("/calificar-varios", methods=["GET", "POST"])
+@require("teacher")
+def batch_grading():
+    source = request.form if request.method == "POST" else request.args
+    group = source.get("group", "").strip().upper()
+    semester = source.get("semester", "").strip()
+    if semester not in {"1", "2", "3", "4", "5", "6"}:
+        semester = ""
+    activity_id = source.get("activity_id", type=int)
+    number_values = [
+        source.get(f"number_{index}", "").strip()
+        for index in range(1, 6)
+    ]
+    grade_values = [
+        source.get(f"grade_{index}", "").strip()
+        for index in range(1, 6)
+    ] if request.method == "POST" else None
+    status_values = [
+        source.get(f"status_{index}", "Revisada").strip()
+        for index in range(1, 6)
+    ] if request.method == "POST" else None
+    comment_values = [
+        source.get(f"comments_{index}", "").strip()
+        for index in range(1, 6)
+    ] if request.method == "POST" else None
+    page_data = _batch_grading_data(
+        group, semester, activity_id, number_values,
+        grade_values, status_values, comment_values,
+    )
+    if request.method == "GET":
+        return render_template("batch_grading.html", **page_data)
+
+    errors = list(page_data["errors"])
+    parsed_grades = []
+    for index, raw_grade in enumerate(grade_values):
+        try:
+            grade = float(raw_grade)
+            if not 0 <= grade <= 10:
+                raise ValueError
+            parsed_grades.append(grade)
+        except ValueError:
+            errors.append(f"Revisa la calificación del alumno {index + 1}; debe estar entre 0 y 10.")
+        if len(comment_values[index]) > 1000:
+            errors.append(f"La observación del alumno {index + 1} supera los 1000 caracteres.")
+        if status_values[index] not in {"Pendiente", "Entregada", "Revisada"}:
+            errors.append(f"Selecciona un estado válido para el alumno {index + 1}.")
+
+    if not page_data["entries"] and not errors:
+        errors.append("Primero busca a los cinco alumnos.")
+    if errors:
+        page_data["errors"] = errors
+        return render_template("batch_grading.html", **page_data)
+
+    saved_students = []
+    with connect() as c:
+        activity = c.execute(
+            """SELECT id FROM activities
+               WHERE id=? AND group_name=? AND semester=?""",
+            (activity_id, group, int(semester)),
+        ).fetchone()
+        if not activity:
+            errors.append("La actividad ya no pertenece al grupo y semestre seleccionados.")
+        number_ints = [int(value) for value in number_values]
+        placeholders = ",".join("?" for _ in number_ints)
+        students = c.execute(
+            f"""SELECT id,full_name,list_number,active,approved
+                FROM users WHERE role='student' AND approved=1
+                  AND group_name=? AND semester=?
+                  AND list_number IN ({placeholders})""",
+            (group, int(semester), *number_ints),
+        ).fetchall()
+        students_by_number = {student["list_number"]: student for student in students}
+        if any(number not in students_by_number for number in number_ints):
+            errors.append("Uno o más alumnos ya no pertenecen a la lista seleccionada.")
+        if not errors:
+            for index, number in enumerate(number_ints):
+                student = students_by_number[number]
+                c.execute(
+                    """INSERT OR IGNORE INTO grades(student_id,activity_id,status)
+                       VALUES(?,?,'Pendiente')""",
+                    (student["id"], activity_id),
+                )
+                previous = c.execute(
+                    """SELECT g.id grade_id,g.student_id,g.activity_id,g.grade,g.status,
+                              g.comments,g.submitted_at,a.title,a.group_name,a.due_date,
+                              u.full_name,u.active,u.approved
+                       FROM grades g JOIN activities a ON a.id=g.activity_id
+                       JOIN users u ON u.id=g.student_id
+                       WHERE g.student_id=? AND g.activity_id=?""",
+                    (student["id"], activity_id),
+                ).fetchone()
+                status = status_values[index]
+                submitted_at = (
+                    date.today().isoformat()
+                    if status in ("Entregada", "Revisada") else ""
+                )
+                _persist_grade_update(
+                    c, previous["grade_id"], previous, parsed_grades[index],
+                    status, comment_values[index], submitted_at,
+                )
+                saved_students.append(student)
+
+    if errors:
+        page_data["errors"] = errors
+        return render_template("batch_grading.html", **page_data)
+
+    for student in saved_students:
+        if student["active"] and student["approved"]:
+            learning = _student_learning_data(student["id"])
+            with connect() as c:
+                _sync_student_celebrations(c, student["id"], learning[5])
+    flash(f"Se guardaron las calificaciones de {len(saved_students)} alumnos.", "success")
+    return redirect(url_for(
+        "batch_grading",
+        group=group,
+        semester=semester,
+        activity_id=activity_id,
+        **{
+            f"number_{index + 1}": number
+            for index, number in enumerate(number_values)
+        },
+    ))
+
 
 @app.route("/expediente")
 @require()

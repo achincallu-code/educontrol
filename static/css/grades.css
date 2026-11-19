@@ -437,6 +437,156 @@
   line-height: 1.6;
 }
 
+.batch-grade-panel {
+  margin-bottom: 18px;
+}
+
+.batch-grade-heading {
+  margin-bottom: 16px;
+}
+
+.batch-grade-heading h2 {
+  margin: 5px 0;
+  color: var(--ink);
+  font: 800 17px Manrope, sans-serif;
+}
+
+.batch-grade-heading p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.batch-grade-search {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 12px;
+}
+
+.batch-grade-search label,
+.batch-grade-entry-fields label {
+  display: grid;
+  gap: 5px;
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.batch-grade-search input,
+.batch-grade-search select,
+.batch-grade-entry-fields input,
+.batch-grade-entry-fields select,
+.batch-grade-entry-fields textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  margin: 0;
+}
+
+.batch-grade-activity {
+  grid-column: span 3;
+}
+
+.batch-grade-number-grid {
+  grid-column: span 3;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.batch-grade-search > button {
+  justify-self: start;
+}
+
+.batch-grade-errors {
+  margin-bottom: 18px;
+  padding: 12px 16px;
+  border: 1px solid #e7b6b2;
+  border-radius: 13px;
+  background: #fff3f1;
+  color: #8c302b;
+  font-size: 11px;
+}
+
+.batch-grade-errors p {
+  margin: 3px 0;
+}
+
+.batch-grade-entry-list {
+  display: grid;
+  gap: 12px;
+}
+
+.batch-grade-entry {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid var(--shell-line);
+  border-radius: 14px;
+  background: var(--shell-surface);
+}
+
+.batch-grade-entry > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.batch-grade-order {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--g);
+  font: 800 14px Manrope, sans-serif;
+}
+
+.batch-grade-entry > header small {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .35px;
+}
+
+.batch-grade-entry h3 {
+  margin: 3px 0 0;
+  color: var(--ink);
+  font: 800 13px Manrope, sans-serif;
+}
+
+.batch-grade-entry-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.batch-grade-entry-fields textarea {
+  resize: vertical;
+}
+
+.batch-grade-comments {
+  grid-column: span 2;
+}
+
+.batch-grade-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.batch-grade-actions small {
+  color: var(--muted);
+  font-size: 9px;
+}
+
 @media (max-width: 760px) {
   .grades-overview {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -448,6 +598,19 @@
 
   .grade-card {
     padding: 15px;
+  }
+
+  .batch-grade-search {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .batch-grade-activity,
+  .batch-grade-number-grid {
+    grid-column: span 2;
+  }
+
+  .batch-grade-number-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -510,6 +673,36 @@
 
   .grade-comment-field {
     grid-column: auto;
+  }
+
+  .batch-grade-search {
+    grid-template-columns: 1fr;
+  }
+
+  .batch-grade-activity,
+  .batch-grade-number-grid {
+    grid-column: auto;
+  }
+
+  .batch-grade-number-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .batch-grade-entry-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .batch-grade-comments {
+    grid-column: auto;
+  }
+
+  .batch-grade-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .batch-grade-actions button {
+    width: 100%;
   }
 }
 
