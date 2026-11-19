@@ -46,8 +46,42 @@
       </select>
     </label>
     <button class="secondary" type="submit">Ver calificaciones</button>
+    <button class="primary" type="submit" name="calculate_stamps" value="1" {% if not selected_group or not selected_semester %}disabled{% endif %}>Calcular calificaciones de cada grupo</button>
   </form>
 </section>
+{% endif %}
+
+{% if calculate_by_stamps %}
+  <section class="panel grades-stamp-calculation" aria-labelledby="stamp-calculation-title">
+    <div class="grades-section-heading">
+      <div>
+        <small class="kicker">RESULTADO APARTE · GRUPO {{ selected_group }} · {{ selected_semester }}° SEMESTRE</small>
+        <h2 id="stamp-calculation-title">Calificación final por sellos</h2>
+      </div>
+      {% if stamp_score_rows %}<span class="grades-count">Máximo del grupo: {{ max_stamp_count }} sello(s)</span>{% endif %}
+    </div>
+    <p>Se cuenta cada actividad marcada como revisada. Quien tenga el máximo recibe 10; las demás notas se calculan proporcionalmente con un decimal. Este cálculo no cambia las calificaciones de las actividades.</p>
+    {% if stamp_score_rows %}
+      <div class="tablebox">
+        <table>
+          <thead><tr><th>Lista</th><th>Alumno</th><th>Sellos</th><th>Calificación final</th></tr></thead>
+          <tbody>
+            {% for student in stamp_score_rows %}
+              <tr>
+                <td>{{ student.list_number or '—' }}</td>
+                <td>{{ student.full_name }}</td>
+                <td>{{ student.stamp_count }}</td>
+                <td><b class="grade-value{% if student.final_grade < 6 %} grade-low{% elif student.final_grade < 8 %} grade-mid{% else %} grade-high{% endif %}">{{ "%.1f"|format(student.final_grade) }}<small>/10</small></b></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if not max_stamp_count %}<p class="empty">Ningún alumno tiene sellos todavía; las calificaciones calculadas son 0.0/10.</p>{% endif %}
+    {% else %}
+      <p class="empty">No hay alumnos activos aprobados en este grupo y semestre.</p>
+    {% endif %}
+  </section>
 {% endif %}
 
 <section class="grades-overview" aria-label="Resumen de calificaciones">

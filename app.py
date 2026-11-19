@@ -2198,6 +2198,12 @@ def delete_activity(aid):
 def grades():
     selected_group = request.args.get("group", "").strip().upper()
     selected_semester = request.args.get("semester", "").strip()
+    calculate_by_stamps = (
+        session["role"] == "teacher"
+        and request.args.get("calculate_stamps") == "1"
+    )
+    stamp_score_rows = []
+    max_stamp_count = 0
     if selected_semester not in {"1", "2", "3", "4", "5", "6"}:
         selected_semester = ""
     with connect() as c:
@@ -2229,10 +2235,41 @@ def grades():
             """SELECT DISTINCT semester FROM users WHERE role='student'
                AND approved=1 AND active=1 AND semester IS NOT NULL ORDER BY semester"""
         ).fetchall() if session["role"] == "teacher" else []
+        if calculate_by_stamps and selected_group and selected_semester:
+            stamp_score_rows = [
+                dict(row) for row in c.execute(
+                    """SELECT u.full_name,u.group_name,u.semester,u.list_number,
+                              COUNT(CASE WHEN g.status='Revisada' THEN 1 END) stamp_count
+                       FROM users u
+                       LEFT JOIN activities a
+                         ON a.group_name=u.group_name AND a.semester=u.semester
+                       LEFT JOIN grades g
+                         ON g.student_id=u.id AND g.activity_id=a.id
+                       WHERE u.role='student' AND u.approved=1 AND u.active=1
+                         AND u.group_name=? AND u.semester=?
+                       GROUP BY u.id
+                       ORDER BY u.list_number NULLS LAST,
+                                LOWER(COALESCE(NULLIF(u.last_name,''),u.full_name)),
+                                LOWER(COALESCE(NULLIF(u.first_name,''),u.full_name)),u.id""",
+                    (selected_group, int(selected_semester)),
+                ).fetchall()
+            ]
+            max_stamp_count = max(
+                (row["stamp_count"] for row in stamp_score_rows),
+                default=0,
+            )
+            for row in stamp_score_rows:
+                row["final_grade"] = (
+                    round(10 * row["stamp_count"] / max_stamp_count, 1)
+                    if max_stamp_count else 0
+                )
     return render_template(
         "grades.html", rows=rows, groups=groups,
         semester_options=semester_options, selected_group=selected_group,
         selected_semester=selected_semester,
+        calculate_by_stamps=calculate_by_stamps,
+        stamp_score_rows=stamp_score_rows,
+        max_stamp_count=max_stamp_count,
     )
 
 
@@ -2301,6 +2338,28 @@ def _persist_grade_update(c, gid, previous, value, status, comments, submitted_a
         )
 
 
+def _rescale_activity_grades(c, activity_id, previous_max, new_max):
+    if previous_max == new_max:
+        return
+    c.execute(
+        """UPDATE grades
+           SET grade=ROUND(CAST(grade AS NUMERIC) * ? / ?,2)
+           WHERE activity_id=? AND grade IS NOT NULL""",
+        (new_max, previous_max, activity_id),
+    )
+    c.execute(
+        """UPDATE grade_improvements
+           SET previous_grade=ROUND(CAST(previous_grade AS NUMERIC) * ? / ?,2),
+               grade=ROUND(CAST(grade AS NUMERIC) * ? / ?,2)
+           WHERE activity_id=?""",
+        (new_max, previous_max, new_max, previous_max, activity_id),
+    )
+    c.execute(
+        "UPDATE activities SET max_points=? WHERE id=?",
+        (new_max, activity_id),
+    )
+
+
 @app.post("/calificacion/<int:gid>")
 @require("teacher")
 def update_grade(gid):
@@ -2311,6 +2370,16 @@ def update_grade(gid):
         return redirect(url_for("grades"))
 
     stamp_evidence = request.form.get("action") == "stamp"
+    requested_max_points_raw = request.form.get("activity_max_points", "").strip()
+    requested_max_points = None
+    if requested_max_points_raw:
+        if not re.fullmatch(r"\d{1,3}", requested_max_points_raw):
+            flash("El valor máximo debe ser un número entero entre 1 y 200 puntos.", "error")
+            return grade_redirect()
+        requested_max_points = int(requested_max_points_raw)
+        if not 1 <= requested_max_points <= 200:
+            flash("El valor máximo debe ser un número entero entre 1 y 200 puntos.", "error")
+            return grade_redirect()
     if stamp_evidence:
         status = "Revisada"
         comments = ""
@@ -2349,9 +2418,12 @@ def update_grade(gid):
         ).fetchone()
         if not previous:
             abort(404)
-        if value is not None and value > (previous["max_points"] or 10):
+        previous = dict(previous)
+        old_max_points = previous["max_points"] or 10
+        new_max_points = requested_max_points or old_max_points
+        if value is not None and value > new_max_points:
             flash(
-                f"La calificación no puede superar {previous['max_points'] or 10} puntos.",
+                f"La calificación no puede superar {new_max_points} puntos.",
                 "error",
             )
             return grade_redirect(previous["student_id"])
@@ -2362,6 +2434,25 @@ def update_grade(gid):
             value = previous["grade"]
             comments = previous["comments"] or ""
             submitted_at_raw = previous["submitted_at"] or date.today().isoformat()
+        if new_max_points != old_max_points:
+            old_grade = previous["grade"]
+            keep_existing_performance = (
+                old_grade is not None and value == old_grade
+            )
+            _rescale_activity_grades(
+                c, previous["activity_id"], old_max_points, new_max_points
+            )
+            previous["grade"] = c.execute(
+                "SELECT grade FROM grades WHERE id=?",
+                (gid,),
+            ).fetchone()["grade"]
+            previous["max_points"] = new_max_points
+            if (
+                old_grade is not None
+                and not stamp_evidence
+                and (value is None or keep_existing_performance)
+            ):
+                value = previous["grade"]
         _persist_grade_update(
             c, gid, previous, value, status, comments, submitted_at_raw
         )

@@ -70,7 +70,11 @@
                       <input type="hidden" name="return_to" value="record">
                       <input type="hidden" name="student_id" value="{{ student.id }}">
                       <button class="record-grade-close" type="button" data-close-grade>Cerrar</button>
-                      <label>Calificación (0 a {{ r.max_points }} puntos)
+                      <label>Valor máximo de esta actividad (1 a 200 puntos)
+                        <input type="number" min="1" max="200" step="1" name="activity_max_points" value="{{ r.max_points or 10 }}" data-activity-max-points required>
+                      </label>
+                      <small class="record-grade-max-help">Si cambias el máximo, las calificaciones existentes se ajustan proporcionalmente. Después puedes escribir la nueva calificación.</small>
+                      <label>Calificación (0 a <span data-grade-max-label>{{ r.max_points }}</span> puntos)
                         <input type="number" min="0" max="{{ r.max_points }}" step=".01" name="grade" value="{{ r.grade if r.grade is not none else '' }}" data-grade-input data-max-points="{{ r.max_points }}">
                       </label>
                       <output class="record-grade-preview" data-grade-preview aria-live="polite">
@@ -184,12 +188,14 @@
 
   document.querySelectorAll(".record-grade-form").forEach((form) => {
     const gradeInput = form.querySelector("[data-grade-input]");
+    const activityMaxInput = form.querySelector("[data-activity-max-points]");
+    const gradeMaxLabel = form.querySelector("[data-grade-max-label]");
     const preview = form.querySelector("[data-grade-preview]");
     const saveButton = form.querySelector('button[type="submit"]');
-    const maxPoints = Number(gradeInput?.dataset.maxPoints || 10);
+    let maxPoints = Number(gradeInput?.dataset.maxPoints || 10);
 
     if (gradeInput && preview) {
-      gradeInput.addEventListener("input", () => {
+      const updateGradePreview = () => {
         const rawGrade = gradeInput.value.trim();
         if (!rawGrade) {
           preview.textContent = "La calificación se verá en Calificaciones del alumno al guardar.";
@@ -207,6 +213,14 @@
         const normalizedGrade = grade * 10 / maxPoints;
         preview.textContent = `Vista previa: ${grade.toLocaleString("es-MX", { maximumFractionDigits: 2 })}/${maxPoints} puntos · Se verá en Calificaciones del alumno`;
         preview.dataset.level = normalizedGrade < 6 ? "low" : normalizedGrade < 8 ? "mid" : "high";
+      };
+      gradeInput.addEventListener("input", updateGradePreview);
+      activityMaxInput?.addEventListener("input", () => {
+        maxPoints = Number(activityMaxInput.value) || 0;
+        gradeInput.max = String(maxPoints);
+        gradeInput.dataset.maxPoints = String(maxPoints);
+        if (gradeMaxLabel) gradeMaxLabel.textContent = String(maxPoints);
+        updateGradePreview();
       });
     }
 

@@ -849,6 +849,13 @@ a.staff-overview-card:hover {
   line-height: 1.4;
 }
 
+.record-grade-max-help {
+  display: block;
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.4;
+}
+
 .record-grade-preview[data-level="low"] {
   background: #fff0ed;
   color: #a63e36;
