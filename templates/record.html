@@ -60,7 +60,7 @@
                 <small class="block">{{ r.description }}</small>
               </td>
               <td data-label="Calificación">
-                <b>{{ r.grade if r.grade is not none else '—' }}</b>
+                <b>{{ r.grade if r.grade is not none else '—' }}{% if r.grade is not none %}/{{ r.max_points }} puntos{% endif %}</b>
                 {% if role == 'teacher' and r.grade_id %}
                   <details class="record-grade-edit no-print">
                     <summary>{% if r.grade is not none %}Editar calificación{% else %}＋ Poner calificación{% endif %}</summary>
@@ -70,11 +70,11 @@
                       <input type="hidden" name="return_to" value="record">
                       <input type="hidden" name="student_id" value="{{ student.id }}">
                       <button class="record-grade-close" type="button" data-close-grade>Cerrar</button>
-                      <label>Calificación (0 a 10)
-                        <input type="number" min="0" max="10" step=".1" name="grade" value="{{ r.grade if r.grade is not none else '' }}" data-grade-input>
+                      <label>Calificación (0 a {{ r.max_points }} puntos)
+                        <input type="number" min="0" max="{{ r.max_points }}" step=".01" name="grade" value="{{ r.grade if r.grade is not none else '' }}" data-grade-input data-max-points="{{ r.max_points }}">
                       </label>
                       <output class="record-grade-preview" data-grade-preview aria-live="polite">
-                        {% if r.grade is not none %}{{ r.grade }}/10 · Se verá en Calificaciones del alumno{% else %}La calificación se verá en Calificaciones del alumno al guardar.{% endif %}
+                        {% if r.grade is not none %}{{ r.grade }}/{{ r.max_points }} puntos · Se verá en Calificaciones del alumno{% else %}La calificación se verá en Calificaciones del alumno al guardar.{% endif %}
                       </output>
                       <label>Estado
                         <select name="status">
@@ -186,6 +186,7 @@
     const gradeInput = form.querySelector("[data-grade-input]");
     const preview = form.querySelector("[data-grade-preview]");
     const saveButton = form.querySelector('button[type="submit"]');
+    const maxPoints = Number(gradeInput?.dataset.maxPoints || 10);
 
     if (gradeInput && preview) {
       gradeInput.addEventListener("input", () => {
@@ -197,14 +198,15 @@
         }
 
         const grade = Number(rawGrade);
-        if (!Number.isFinite(grade) || grade < 0 || grade > 10) {
-          preview.textContent = "Ingresa una calificación entre 0 y 10.";
+        if (!Number.isFinite(grade) || grade < 0 || grade > maxPoints) {
+          preview.textContent = `Ingresa una calificación entre 0 y ${maxPoints} puntos.`;
           preview.dataset.level = "invalid";
           return;
         }
 
-        preview.textContent = `Vista previa: ${grade.toLocaleString("es-MX", { maximumFractionDigits: 1 })}/10 · Se verá en Calificaciones del alumno`;
-        preview.dataset.level = grade < 6 ? "low" : grade < 8 ? "mid" : "high";
+        const normalizedGrade = grade * 10 / maxPoints;
+        preview.textContent = `Vista previa: ${grade.toLocaleString("es-MX", { maximumFractionDigits: 2 })}/${maxPoints} puntos · Se verá en Calificaciones del alumno`;
+        preview.dataset.level = normalizedGrade < 6 ? "low" : normalizedGrade < 8 ? "mid" : "high";
       });
     }
 

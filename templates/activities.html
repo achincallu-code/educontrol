@@ -45,6 +45,10 @@
           <option>Parcial 1</option><option>Parcial 2</option><option>Parcial 3</option>
         </select>
       </div>
+      <div class="activity-field">
+        <label for="activity-max-points">Valor máximo (1–200 puntos) <span aria-hidden="true">*</span></label>
+        <input id="activity-max-points" type="number" name="max_points" min="1" max="200" step="1" required value="10">
+      </div>
       <div class="activity-field activity-field-date">
         <label for="activity-due-date">Fecha de entrega <span class="activity-optional">Opcional</span></label>
         <input id="activity-due-date" type="date" name="due_date">
@@ -147,6 +151,7 @@
           {% else %}
             <span><svg class="ui-icon" aria-hidden="true"><use href="#icon-calendar"></use></svg>Sin fecha de entrega</span>
           {% endif %}
+          <span><svg class="ui-icon" aria-hidden="true"><use href="#icon-star"></use></svg>Valor máximo {{ activity.max_points }} puntos</span>
           {% if activity.created_at %}<span><svg class="ui-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>Publicada {{ activity.created_at|string|truncate(10, True, '') }}</span>{% endif %}
         </div>
         {% if role == 'teacher' %}
@@ -163,7 +168,7 @@
             {% endif %}
           </div>
         {% elif activity.grade is not none %}
-          <div class="activity-grade"><svg class="ui-icon" aria-hidden="true"><use href="#icon-star"></use></svg>Calificación <b>{{ activity.grade }}/10</b></div>
+          <div class="activity-grade"><svg class="ui-icon" aria-hidden="true"><use href="#icon-star"></use></svg>Calificación <b>{{ activity.grade }}/{{ activity.max_points }} puntos</b></div>
         {% endif %}
         <div class="activity-card-actions">
           {% if role == 'teacher' %}

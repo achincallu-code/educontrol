@@ -6,7 +6,7 @@
   {% set summary.total = summary.total + 1 %}
   {% if r.grade is not none %}
     {% set summary.graded = summary.graded + 1 %}
-    {% set summary.grade_sum = summary.grade_sum + r.grade %}
+    {% set summary.grade_sum = summary.grade_sum + (r.grade * 10 / (r.max_points or 10)) %}
   {% endif %}
   {% if r.status == 'Revisada' %}
     {% set summary.reviewed = summary.reviewed + 1 %}
@@ -114,17 +114,19 @@
                 {{ r.status }}
               </span>
               {% if r.grade is not none %}
-                <strong class="grade-value{% if r.grade < 6 %} grade-low{% elif r.grade < 8 %} grade-mid{% else %} grade-high{% endif %}">{{ r.grade }}<small>/10</small></strong>
+                {% set normalized_grade = r.grade * 10 / (r.max_points or 10) %}
+                <strong class="grade-value{% if normalized_grade < 6 %} grade-low{% elif normalized_grade < 8 %} grade-mid{% else %} grade-high{% endif %}">{{ r.grade }}<small>/{{ r.max_points }} puntos</small></strong>
               {% else %}
                 <strong class="grade-value grade-unscored">Sin calificar</strong>
               {% endif %}
             </div>
           </div>
           {% if r.grade is not none %}
+            {% set normalized_grade = r.grade * 10 / (r.max_points or 10) %}
             <div class="grade-performance">
-              <div class="grade-performance-label"><span>Desempeño</span><b>{{ (r.grade / 10 * 100)|round|int }}%</b></div>
-              <div class="grade-bar" role="img" aria-label="Desempeño: {{ r.grade }} de 10">
-                <span class="{% if r.grade < 6 %}grade-bar-low{% elif r.grade < 8 %}grade-bar-mid{% else %}grade-bar-high{% endif %}" style="--grade: {{ (r.grade / 10 * 100)|round|int }}%"></span>
+              <div class="grade-performance-label"><span>Desempeño</span><b>{{ (normalized_grade / 10 * 100)|round|int }}%</b></div>
+              <div class="grade-bar" role="img" aria-label="Desempeño: {{ r.grade }} de {{ r.max_points }} puntos">
+                <span class="{% if normalized_grade < 6 %}grade-bar-low{% elif normalized_grade < 8 %}grade-bar-mid{% else %}grade-bar-high{% endif %}" style="--grade: {{ (normalized_grade / 10 * 100)|round|int }}%"></span>
               </div>
             </div>
           {% endif %}
@@ -142,8 +144,8 @@
               <summary><svg class="ui-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>Editar evaluación</summary>
               <form method="post" action="{{ url_for('update_grade', gid=r.grade_id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <label>Calificación (0 a 10)
-                  <input type="number" min="0" max="10" step=".1" name="grade" value="{{ r.grade if r.grade is not none else '' }}">
+                <label>Calificación (0 a {{ r.max_points }} puntos)
+                  <input type="number" min="0" max="{{ r.max_points }}" step=".01" name="grade" value="{{ r.grade if r.grade is not none else '' }}">
                 </label>
                 <label>Estado
                   <select name="status">

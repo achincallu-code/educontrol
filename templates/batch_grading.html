@@ -31,7 +31,7 @@
     <label class="batch-grade-activity">Actividad
       <select name="activity_id" required>
         <option value="">Selecciona una actividad</option>
-        {% for activity in activities %}<option value="{{ activity.id }}" {% if activity_id == activity.id %}selected{% endif %}>{{ activity.title }} · {{ activity.subject }} · {{ activity.partial }}</option>{% endfor %}
+        {% for activity in activities %}<option value="{{ activity.id }}" {% if activity_id == activity.id %}selected{% endif %}>{{ activity.title }} · {{ activity.subject }} · {{ activity.partial }} · máximo {{ activity.max_points }} puntos</option>{% endfor %}
       </select>
     </label>
     <div class="batch-grade-number-grid">
@@ -56,7 +56,7 @@
     <div class="batch-grade-heading">
       <small class="kicker">2 · CONFIRMA Y CALIFICA</small>
       <h2>{{ selected_activity.title }}</h2>
-      <p>Grupo {{ group }} · {{ semester }}° semestre · {{ selected_activity.subject }} · {{ selected_activity.partial }}</p>
+      <p>Grupo {{ group }} · {{ semester }}° semestre · {{ selected_activity.subject }} · {{ selected_activity.partial }} · Máximo {{ selected_activity.max_points }} puntos</p>
       <p>Los alumnos aparecen en el mismo orden en que ingresaste sus números. Puedes calificar, cambiar el estado o poner el sello de revisado a cada uno.</p>
     </div>
     <form method="post" action="{{ url_for('batch_grading') }}" data-scroll-restore-url="{{ url_for('batch_grading', group=group, semester=semester, activity_id=activity_id) }}">
@@ -76,8 +76,8 @@
             </header>
             <input type="hidden" name="number_{{ loop.index }}" value="{{ entry.number }}">
             <div class="batch-grade-entry-fields">
-              <label>Calificación (0 a 10)
-                <input type="number" name="grade_{{ loop.index }}" min="0" max="10" step=".1" value="{{ entry.grade }}">
+              <label>Calificación (0 a {{ selected_activity.max_points }} puntos)
+                <input type="number" name="grade_{{ loop.index }}" min="0" max="{{ selected_activity.max_points }}" step=".01" value="{{ entry.grade }}">
               </label>
               <label>Estado
                 <select name="status_{{ loop.index }}">

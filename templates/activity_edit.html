@@ -5,7 +5,7 @@
 <section class="panel activity-create-panel edit-form-panel">
   <div class="activity-create-heading">
     <span class="activity-section-icon"><svg class="ui-icon" aria-hidden="true"><use href="#icon-book"></use></svg></span>
-    <div><small class="kicker">DETALLES DE LA ASIGNACIÓN</small><h2>{{ activity.title }}</h2><p>Actualiza las indicaciones sin perder las calificaciones existentes.</p></div>
+    <div><small class="kicker">DETALLES DE LA ASIGNACIÓN</small><h2>{{ activity.title }}</h2><p>Si cambias el valor máximo, las calificaciones existentes se ajustan proporcionalmente para conservar el mismo desempeño (por ejemplo, 8/10 pasa a 16/20).</p></div>
   </div>
   <form method="post" class="activity-form activity-form-modern" data-scroll-restore-url="{{ return_url }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -36,6 +36,10 @@
       <div class="activity-field">
         <label for="edit-activity-partial">Parcial <span aria-hidden="true">*</span></label>
         <input id="edit-activity-partial" name="partial" maxlength="160" required value="{{ activity.partial }}">
+      </div>
+      <div class="activity-field">
+        <label for="edit-activity-max-points">Valor máximo (1–200 puntos) <span aria-hidden="true">*</span></label>
+        <input id="edit-activity-max-points" type="number" name="max_points" min="1" max="200" step="1" required value="{{ activity.max_points or 10 }}">
       </div>
       <div class="activity-field activity-field-date">
         <label for="edit-activity-date">Fecha de entrega <span class="activity-optional">Opcional</span></label>
