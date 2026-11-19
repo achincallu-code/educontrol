@@ -9,8 +9,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   if (
     savedScroll
-    && savedScroll.path === window.location.pathname
+    && (savedScroll.path === "*" || savedScroll.path === window.location.pathname)
     && Number.isFinite(savedScroll.y)
+    && savedScroll.y >= 0
+    && Number.isFinite(savedScroll.timestamp)
     && Date.now() - savedScroll.timestamp < 15000
   ) {
     const restoreScroll = () => {
@@ -22,12 +24,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("submit", (event) => {
     const form = event.target;
-    if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== "get") return;
+    if (
+      event.defaultPrevented
+      || !(form instanceof HTMLFormElement)
+      || !["get", "post"].includes(form.method.toLowerCase())
+    ) return;
     const action = new URL(form.action, window.location.href);
     if (action.origin !== window.location.origin) return;
+    const method = form.method.toLowerCase();
+    if (method === "post" && action.pathname === "/salir") return;
     try {
       sessionStorage.setItem(scrollRestoreKey, JSON.stringify({
-        path: action.pathname,
+        path: method === "get" ? action.pathname : "*",
         y: window.scrollY,
         timestamp: Date.now()
       }));
