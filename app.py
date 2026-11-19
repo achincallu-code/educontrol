@@ -2315,8 +2315,8 @@ def _batch_grading_data(
 
     with connect() as c:
         groups = c.execute(
-            """SELECT DISTINCT group_name FROM users WHERE role='student'
-               AND approved=1 ORDER BY LOWER(group_name)"""
+            """SELECT group_name FROM users WHERE role='student'
+               AND approved=1 GROUP BY group_name ORDER BY LOWER(group_name)"""
         ).fetchall()
         semester_options = c.execute(
             """SELECT DISTINCT semester FROM users WHERE role='student'
