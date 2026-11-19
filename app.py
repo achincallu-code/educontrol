@@ -2305,6 +2305,7 @@ def update_grade(gid):
 def _batch_grading_data(
     group, semester, activity_id, number_values,
     grade_values=None, status_values=None, comment_values=None,
+    stamp_values=None,
 ):
     errors = []
     activities = []
@@ -2386,7 +2387,8 @@ def _batch_grading_data(
                         elif student["grade"] is not None:
                             entry_status = student["status"] or "Revisada"
                         else:
-                            entry_status = "Revisada"
+                            entry_status = student["status"] or "Pendiente"
+                        stamp = stamp_values[index] if stamp_values is not None else False
                         entries.append({
                             "student": student,
                             "number": number,
@@ -2395,7 +2397,8 @@ def _batch_grading_data(
                                 if grade_values is not None
                                 else current_grade
                             ),
-                            "status": entry_status,
+                            "status": "Revisada" if stamp else entry_status,
+                            "stamp": stamp,
                             "comments": (
                                 comment_values[index]
                                 if comment_values is not None
@@ -2442,9 +2445,13 @@ def batch_grading():
         source.get(f"comments_{index}", "").strip()
         for index in range(1, 6)
     ] if request.method == "POST" else None
+    stamp_values = [
+        source.get(f"stamp_{index}") == "1"
+        for index in range(1, 6)
+    ] if request.method == "POST" else None
     page_data = _batch_grading_data(
         group, semester, activity_id, number_values,
-        grade_values, status_values, comment_values,
+        grade_values, status_values, comment_values, stamp_values,
     )
     if request.method == "GET":
         return render_template("batch_grading.html", **page_data)
@@ -2452,16 +2459,22 @@ def batch_grading():
     errors = list(page_data["errors"])
     parsed_grades = []
     for index, raw_grade in enumerate(grade_values):
-        try:
-            grade = float(raw_grade)
-            if not 0 <= grade <= 10:
-                raise ValueError
-            parsed_grades.append(grade)
-        except ValueError:
-            errors.append(f"Revisa la calificación del alumno {index + 1}; debe estar entre 0 y 10.")
+        if not raw_grade and stamp_values[index]:
+            parsed_grades.append(None)
+        else:
+            try:
+                grade = float(raw_grade)
+                if not 0 <= grade <= 10:
+                    raise ValueError
+                parsed_grades.append(grade)
+            except ValueError:
+                errors.append(
+                    f"Ingresa una calificación válida para el alumno {index + 1} "
+                    "o marca el sello de revisado."
+                )
         if len(comment_values[index]) > 1000:
             errors.append(f"La observación del alumno {index + 1} supera los 1000 caracteres.")
-        if status_values[index] not in {"Pendiente", "Entregada", "Revisada"}:
+        if not stamp_values[index] and status_values[index] not in {"Pendiente", "Entregada", "Revisada"}:
             errors.append(f"Selecciona un estado válido para el alumno {index + 1}.")
 
     if not page_data["entries"] and not errors:
@@ -2508,14 +2521,30 @@ def batch_grading():
                        WHERE g.student_id=? AND g.activity_id=?""",
                     (student["id"], activity_id),
                 ).fetchone()
-                status = status_values[index]
-                submitted_at = (
-                    date.today().isoformat()
-                    if status in ("Entregada", "Revisada") else ""
-                )
+                if stamp_values[index]:
+                    status = "Revisada"
+                    value = (
+                        parsed_grades[index]
+                        if parsed_grades[index] is not None
+                        else previous["grade"]
+                    )
+                    comments = (
+                        previous["comments"] or ""
+                        if parsed_grades[index] is None
+                        else comment_values[index]
+                    )
+                    submitted_at = previous["submitted_at"] or date.today().isoformat()
+                else:
+                    status = status_values[index]
+                    value = parsed_grades[index]
+                    comments = comment_values[index]
+                    submitted_at = (
+                        date.today().isoformat()
+                        if status in ("Entregada", "Revisada") else ""
+                    )
                 _persist_grade_update(
-                    c, previous["grade_id"], previous, parsed_grades[index],
-                    status, comment_values[index], submitted_at,
+                    c, previous["grade_id"], previous, value,
+                    status, comments, submitted_at,
                 )
                 saved_students.append(student)
 

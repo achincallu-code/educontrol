@@ -57,7 +57,7 @@
       <small class="kicker">2 · CONFIRMA Y CALIFICA</small>
       <h2>{{ selected_activity.title }}</h2>
       <p>Grupo {{ group }} · {{ semester }}° semestre · {{ selected_activity.subject }} · {{ selected_activity.partial }}</p>
-      <p>Los alumnos aparecen en el mismo orden en que ingresaste sus números. Elige el estado de cada evaluación antes de guardar.</p>
+      <p>Los alumnos aparecen en el mismo orden en que ingresaste sus números. Puedes calificar, cambiar el estado o poner el sello de revisado a cada uno.</p>
     </div>
     <form method="post" action="{{ url_for('batch_grading') }}" data-scroll-restore-url="{{ url_for('batch_grading', group=group, semester=semester, activity_id=activity_id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -77,12 +77,16 @@
             <input type="hidden" name="number_{{ loop.index }}" value="{{ entry.number }}">
             <div class="batch-grade-entry-fields">
               <label>Calificación (0 a 10)
-                <input type="number" name="grade_{{ loop.index }}" min="0" max="10" step=".1" required value="{{ entry.grade }}">
+                <input type="number" name="grade_{{ loop.index }}" min="0" max="10" step=".1" value="{{ entry.grade }}">
               </label>
               <label>Estado
                 <select name="status_{{ loop.index }}">
                   {% for status in ['Pendiente', 'Entregada', 'Revisada'] %}<option value="{{ status }}" {% if entry.status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}
                 </select>
+              </label>
+              <label class="batch-grade-stamp">
+                <input type="checkbox" name="stamp_{{ loop.index }}" value="1" {% if entry.stamp %}checked{% endif %}>
+                <span><img src="{{ url_for('static', filename='img/sello-revisado.svg') }}" alt="" aria-hidden="true"> Aplicar sello de revisado</span>
               </label>
               <label class="batch-grade-comments">Observación (opcional)
                 <textarea name="comments_{{ loop.index }}" rows="2" maxlength="1000">{{ entry.comments }}</textarea>
@@ -92,7 +96,7 @@
         {% endfor %}
       </div>
       <div class="batch-grade-actions">
-        <small>Se guardará una calificación individual para cada alumno.</small>
+        <small>Si marcas el sello y dejas vacía la calificación, se conserva la nota actual.</small>
         <button class="primary" type="submit">Guardar las cinco calificaciones</button>
       </div>
     </form>

@@ -569,6 +569,37 @@
   resize: vertical;
 }
 
+.batch-grade-stamp {
+  grid-column: span 2;
+  display: flex !important;
+  align-items: center;
+  gap: 8px !important;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 1px solid var(--accent-border);
+  border-radius: 10px;
+  background: var(--accent-wash);
+  color: var(--g) !important;
+}
+
+.batch-grade-stamp input {
+  width: 17px;
+  min-height: 17px;
+  margin: 0;
+  accent-color: var(--g);
+}
+
+.batch-grade-stamp span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.batch-grade-stamp img {
+  width: 22px;
+  height: 22px;
+}
+
 .batch-grade-comments {
   grid-column: span 2;
 }
@@ -693,6 +724,10 @@
   }
 
   .batch-grade-comments {
+    grid-column: auto;
+  }
+
+  .batch-grade-stamp {
     grid-column: auto;
   }
 
