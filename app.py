@@ -1560,8 +1560,9 @@ def students():
                 quick_message = "No se encontró un alumno activo con ese grupo, semestre y número de lista."
     sql += (
         " ORDER BY LOWER(group_name), "
+        "semester NULLS LAST, list_number NULLS LAST, "
         "LOWER(COALESCE(NULLIF(last_name,''),full_name)), "
-        "LOWER(COALESCE(NULLIF(first_name,''),full_name)), list_number"
+        "LOWER(COALESCE(NULLIF(first_name,''),full_name)), id"
     )
     with connect() as c:
         rows = c.execute(sql, args).fetchall()
@@ -1728,10 +1729,10 @@ def pending():
         rows = c.execute(
             """SELECT * FROM users WHERE """
             + " AND ".join(conditions)
-            + """ ORDER BY LOWER(group_name),semester,
+            + """ ORDER BY LOWER(group_name),semester NULLS LAST,list_number NULLS LAST,
                         LOWER(COALESCE(NULLIF(last_name,''),full_name)),
                         LOWER(COALESCE(NULLIF(first_name,''),full_name)),
-                        list_number""",
+                        id""",
             parameters,
         ).fetchall()
         groups = c.execute(
@@ -2095,9 +2096,10 @@ def grades():
                     sql + """ WHERE u.group_name=? AND u.semester=?
                             AND a.group_name=u.group_name AND a.semester=u.semester
                           ORDER BY LOWER(u.group_name),
+                          u.semester NULLS LAST,u.list_number NULLS LAST,
                           LOWER(COALESCE(NULLIF(u.last_name,''),u.full_name)),
                           LOWER(COALESCE(NULLIF(u.first_name,''),u.full_name)),
-                          u.list_number, a.id DESC""",
+                          u.id, a.id DESC""",
                     (selected_group, int(selected_semester)),
                 ).fetchall()
             else:
@@ -2288,10 +2290,10 @@ def export_students():
         rows = c.execute(
             """SELECT full_name,first_name,last_name,email,semester,group_name,list_number,username,active
                FROM users WHERE role='student' AND approved=1
-               ORDER BY LOWER(group_name),
+               ORDER BY LOWER(group_name),semester NULLS LAST,list_number NULLS LAST,
                         LOWER(COALESCE(NULLIF(last_name,''),full_name)),
                         LOWER(COALESCE(NULLIF(first_name,''),full_name)),
-                        list_number"""
+                        id"""
         ).fetchall()
     out = io.StringIO()
     w = csv.writer(out)
@@ -2353,10 +2355,10 @@ def _performance_report(c, group_filter="", semester_filter="", student_search="
         + cohort_clause
            + search_clause
            + """ GROUP BY u.id
-             ORDER BY LOWER(u.group_name),
+             ORDER BY LOWER(u.group_name),u.semester NULLS LAST,u.list_number NULLS LAST,
                       LOWER(COALESCE(NULLIF(u.last_name,''),u.full_name)),
                       LOWER(COALESCE(NULLIF(u.first_name,''),u.full_name)),
-                      u.list_number""",
+                      u.id""",
         student_args,
     ).fetchall()
     return groups, students

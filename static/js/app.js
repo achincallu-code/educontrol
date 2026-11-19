@@ -1,4 +1,41 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const scrollRestoreKey = "cecy-control:restore-scroll";
+  let savedScroll;
+  try {
+    savedScroll = JSON.parse(sessionStorage.getItem(scrollRestoreKey) || "null");
+    sessionStorage.removeItem(scrollRestoreKey);
+  } catch (error) {
+    console.error("No se pudo restaurar la posición de desplazamiento.", error);
+  }
+  if (
+    savedScroll
+    && savedScroll.path === window.location.pathname
+    && Number.isFinite(savedScroll.y)
+    && Date.now() - savedScroll.timestamp < 15000
+  ) {
+    const restoreScroll = () => {
+      window.requestAnimationFrame(() => window.scrollTo(0, savedScroll.y));
+    };
+    if (document.readyState === "complete") restoreScroll();
+    else window.addEventListener("load", restoreScroll, { once: true });
+  }
+
+  document.addEventListener("submit", (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || form.method.toLowerCase() !== "get") return;
+    const action = new URL(form.action, window.location.href);
+    if (action.origin !== window.location.origin) return;
+    try {
+      sessionStorage.setItem(scrollRestoreKey, JSON.stringify({
+        path: action.pathname,
+        y: window.scrollY,
+        timestamp: Date.now()
+      }));
+    } catch (error) {
+      console.error("No se pudo guardar la posición de desplazamiento.", error);
+    }
+  });
+
   const themeColors = {
     green: "#087443",
     blue: "#1767a6",
